@@ -20,10 +20,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client := buford.NewClient(cert)
-	gateway := "api.sandbox.push.apple.com"
+	service := buford.Service{
+		Client: buford.NewClient(cert),
+		Host:   "https://api.sandbox.push.apple.com",
+	}
 
-	err = buford.Push(client, gateway, deviceToken, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
+	err = service.Push(deviceToken, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
 	if err != nil {
 		log.Fatal(err)
 	}

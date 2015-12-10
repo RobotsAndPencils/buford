@@ -11,7 +11,13 @@ import (
 	"net/http"
 )
 
-// Client error responses
+// Service is the Apple Push Notification Service
+type Service struct {
+	Client *http.Client
+	Host   string
+}
+
+// Service error responses
 var (
 	ErrBadDeviceToken = errors.New("bad device token")
 )
@@ -33,8 +39,8 @@ type response struct {
 }
 
 // Push notification
-func Push(client *http.Client, gateway string, deviceToken string, payload []byte) error {
-	urlStr := fmt.Sprintf("https://%v/3/device/%v", gateway, deviceToken)
+func (s *Service) Push(deviceToken string, payload []byte) error {
+	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
 	if err != nil {
@@ -42,9 +48,9 @@ func Push(client *http.Client, gateway string, deviceToken string, payload []byt
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("apns-expiration", "0")
-	// apns-id, other headers such as priority
+	// TODO: apns-id, other headers such as priority
 
-	resp, err := client.Do(req)
+	resp, err := s.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -61,7 +67,7 @@ func Push(client *http.Client, gateway string, deviceToken string, payload []byt
 		return err
 	}
 
-	// logging full responses while learning API
+	// logging full responses while learning the API
 	log.Println(string(body))
 
 	var response response
