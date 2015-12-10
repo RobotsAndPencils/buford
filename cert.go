@@ -16,7 +16,7 @@ var (
 	ErrExpiredCert = errors.New("certificate has expired or is not yet valid")
 )
 
-// LoadCert loads a .p12 certificate
+// LoadCert loads a .p12 certificate from disk.
 func LoadCert(name, password string) (tls.Certificate, error) {
 	p12, err := ioutil.ReadFile(name)
 	if err != nil {
@@ -25,7 +25,7 @@ func LoadCert(name, password string) (tls.Certificate, error) {
 	return DecodeCert(p12, password)
 }
 
-// DecodeCert decodes an in memory .p12 certificate
+// DecodeCert decodes an in memory .p12 certificate.
 func DecodeCert(p12 []byte, password string) (tls.Certificate, error) {
 	// decode an x509.Certificate to verify
 	_, cert, err := pkcs12.Decode(p12, password)

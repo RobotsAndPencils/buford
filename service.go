@@ -1,3 +1,4 @@
+// Package buford push notifications to Apple.
 package buford
 
 import (
@@ -17,7 +18,7 @@ const (
 	Live    = "https://api.push.apple.com"
 )
 
-// Service is the Apple Push Notification Service
+// Service is the Apple Push Notification Service.
 type Service struct {
 	Client *http.Client
 	Host   string
@@ -29,7 +30,7 @@ var (
 	ErrForbidden      = errors.New("forbidden, check your certificate")
 )
 
-// NewClient sets up an HTTPS client
+// NewClient sets up an HTTPS client.
 func NewClient(cert tls.Certificate) *http.Client {
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
@@ -45,7 +46,7 @@ type response struct {
 	// timestamp, other fields?
 }
 
-// Push notification
+// Push a notification.
 func (s *Service) Push(deviceToken string, payload []byte) error {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
