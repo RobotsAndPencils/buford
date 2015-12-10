@@ -1,13 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 
 	"github.com/RobotsAndPencils/buford"
 )
@@ -21,29 +16,15 @@ func main() {
 	flag.Parse()
 
 	cert, err := buford.LoadCert(filename, password)
-
-	// Setup HTTPS client
-	config := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-	transport := &http.Transport{TLSClientConfig: config}
-	client := &http.Client{Transport: transport}
-
-	json := bytes.NewBufferString(`{ "aps" : { "alert" : "Hello HTTP/2" } }`)
-	u := fmt.Sprintf("https://api.sandbox.push.apple.com/3/device/%v", deviceToken)
-
-	resp, err := client.Post(u, "application/json", json)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	log.Println("status", resp.StatusCode)
-
-	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(string(body))
+	client := buford.NewClient(cert)
+	gateway := "api.sandbox.push.apple.com"
+
+	err = buford.Push(client, gateway, deviceToken, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
+	if err != nil {
+		log.Fatal(err)
+	}
 }

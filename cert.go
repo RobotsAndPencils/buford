@@ -11,8 +11,8 @@ import (
 	"golang.org/x/crypto/pkcs12"
 )
 
+// Certificate errors
 var (
-	// ErrExpiredCert if cerificate has expired
 	ErrExpiredCert = errors.New("certificate has expired or is not yet valid")
 )
 
