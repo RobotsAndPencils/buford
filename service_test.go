@@ -36,7 +36,7 @@ func TestPush(t *testing.T) {
 		Host:   server.URL,
 	}
 
-	err := service.Push(deviceToken, payload)
+	err := service.Push(deviceToken, Headers{}, payload)
 	if err != nil {
 		t.Error(err)
 	}

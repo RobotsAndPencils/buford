@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 // Apple host locations
@@ -22,6 +23,15 @@ const (
 type Service struct {
 	Client *http.Client
 	Host   string
+}
+
+// Headers sent with a push to control the notification.
+//
+// TODO: need more details on format and available headers.
+type Headers struct {
+	Expiration time.Time // apns-expiration
+	// apns-id
+	// other headers such as priority
 }
 
 // Service error responses
@@ -47,7 +57,7 @@ type response struct {
 }
 
 // Push a notification.
-func (s *Service) Push(deviceToken string, payload []byte) error {
+func (s *Service) Push(deviceToken string, headers Headers, payload []byte) error {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
@@ -55,8 +65,7 @@ func (s *Service) Push(deviceToken string, payload []byte) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("apns-expiration", "0")
-	// TODO: apns-id, other headers such as priority
+	// TODO: set the apns-* headers
 
 	resp, err := s.Client.Do(req)
 	if err != nil {

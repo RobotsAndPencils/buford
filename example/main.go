@@ -25,7 +25,7 @@ func main() {
 		Host:   buford.Sandbox,
 	}
 
-	err = service.Push(deviceToken, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
+	err = service.Push(deviceToken, buford.Headers{}, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
 	if err != nil {
 		log.Fatal(err)
 	}
