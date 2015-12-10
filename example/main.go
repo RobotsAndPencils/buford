@@ -22,7 +22,7 @@ func main() {
 
 	service := buford.Service{
 		Client: buford.NewClient(cert),
-		Host:   "https://api.sandbox.push.apple.com",
+		Host:   buford.Sandbox,
 	}
 
 	err = service.Push(deviceToken, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))

@@ -11,6 +11,12 @@ import (
 	"net/http"
 )
 
+// Apple host locations
+const (
+	Sandbox = "https://api.sandbox.push.apple.com"
+	Live    = "https://api.push.apple.com"
+)
+
 // Service is the Apple Push Notification Service
 type Service struct {
 	Client *http.Client
@@ -20,6 +26,7 @@ type Service struct {
 // Service error responses
 var (
 	ErrBadDeviceToken = errors.New("bad device token")
+	ErrForbidden      = errors.New("forbidden, check your certificate")
 )
 
 // NewClient sets up an HTTPS client
@@ -67,6 +74,8 @@ func (s *Service) Push(deviceToken string, payload []byte) error {
 		return err
 	}
 
+	// http.StatusBadRequest, http.StatusForbidden
+	log.Println(resp.StatusCode)
 	// logging full responses while learning the API
 	log.Println(string(body))
 
@@ -76,6 +85,8 @@ func (s *Service) Push(deviceToken string, payload []byte) error {
 	switch response.Reason {
 	case "BadDeviceToken":
 		return ErrBadDeviceToken
+	case "Forbidden":
+		return ErrForbidden
 	}
 	return fmt.Errorf("Error response: %v", response.Reason)
 }
