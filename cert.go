@@ -3,7 +3,6 @@ package buford
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -28,7 +27,7 @@ func LoadCert(name, password string) (tls.Certificate, error) {
 // DecodeCert decodes an in memory .p12 certificate.
 func DecodeCert(p12 []byte, password string) (tls.Certificate, error) {
 	// decode an x509.Certificate to verify
-	_, cert, err := pkcs12.Decode(p12, password)
+	privateKey, cert, err := pkcs12.Decode(p12, password)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
@@ -36,9 +35,12 @@ func DecodeCert(p12 []byte, password string) (tls.Certificate, error) {
 		return tls.Certificate{}, err
 	}
 
-	// decode again: this appears to be the easiest way to get a tls.Certificate
-	// without copy/pasting unexported functions from the standard library
-	return decode(p12, password)
+	// wrap in a tls certificate
+	return tls.Certificate{
+		Certificate: [][]byte{cert.Raw},
+		PrivateKey:  privateKey,
+		Leaf:        cert,
+	}, nil
 }
 
 // verify checks if a certificate has expired
@@ -63,19 +65,4 @@ func verify(cert *x509.Certificate) error {
 	default:
 		return err
 	}
-}
-
-// decode a cert to an X509KeyPair
-func decode(p12 []byte, password string) (tls.Certificate, error) {
-	blocks, err := pkcs12.ToPEM(p12, password)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	var pemData []byte
-	for _, b := range blocks {
-		pemData = append(pemData, pem.EncodeToMemory(b)...)
-	}
-
-	return tls.X509KeyPair(pemData, pemData)
 }
