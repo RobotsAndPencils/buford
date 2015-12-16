@@ -1,11 +1,15 @@
-package buford
+package cert_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/RobotsAndPencils/buford/cert"
+)
 
 func TestValidCert(t *testing.T) {
 	const name = "/Users/nathany/src/github.com/RobotsAndPencils/nx-client/ruby/Pushy.p12"
 
-	_, err := LoadCert(name, "")
+	_, err := cert.Load(name, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -14,14 +18,14 @@ func TestValidCert(t *testing.T) {
 func TestExpiredCert(t *testing.T) {
 	const name = "/Users/nathany/src/github.com/RobotsAndPencils/nx-client/ruby/Pushy-expired.p12"
 
-	_, err := LoadCert(name, "")
-	if err != ErrExpiredCert {
+	_, err := cert.Load(name, "")
+	if err != cert.ErrExpired {
 		t.Fatal("Expected expired cert error, got", err)
 	}
 }
 
 func TestMissingFile(t *testing.T) {
-	_, err := LoadCert("hide-and-seek.p12", "")
+	_, err := cert.Load("hide-and-seek.p12", "")
 	if err == nil {
 		t.Fatal("Expected file not found, got", err)
 	}

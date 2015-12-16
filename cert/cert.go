@@ -1,4 +1,6 @@
-package buford
+// Package cert loads Push Services certificates exported from your Keychain
+// in Personal Information Exchange format (*.p12).
+package cert
 
 import (
 	"crypto/tls"
@@ -12,20 +14,20 @@ import (
 
 // Certificate errors
 var (
-	ErrExpiredCert = errors.New("certificate has expired or is not yet valid")
+	ErrExpired = errors.New("certificate has expired or is not yet valid")
 )
 
-// LoadCert loads a .p12 certificate from disk.
-func LoadCert(name, password string) (tls.Certificate, error) {
-	p12, err := ioutil.ReadFile(name)
+// Load a .p12 certificate from disk.
+func Load(filename, password string) (tls.Certificate, error) {
+	p12, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("Unable to load %s: %v", name, err)
+		return tls.Certificate{}, fmt.Errorf("Unable to load %s: %v", filename, err)
 	}
-	return DecodeCert(p12, password)
+	return Decode(p12, password)
 }
 
-// DecodeCert decodes an in memory .p12 certificate.
-func DecodeCert(p12 []byte, password string) (tls.Certificate, error) {
+// Decode and verify an in memory .p12 certificate (DER binary format).
+func Decode(p12 []byte, password string) (tls.Certificate, error) {
 	// decode an x509.Certificate to verify
 	privateKey, cert, err := pkcs12.Decode(p12, password)
 	if err != nil {
@@ -54,7 +56,7 @@ func verify(cert *x509.Certificate) error {
 	case x509.CertificateInvalidError:
 		switch e.Reason {
 		case x509.Expired:
-			return ErrExpiredCert
+			return ErrExpired
 		default:
 			return err
 		}

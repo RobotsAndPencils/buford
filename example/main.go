@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/RobotsAndPencils/buford"
+	"github.com/RobotsAndPencils/buford/cert"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 	flag.StringVar(&environment, "e", "development", "Environment")
 	flag.Parse()
 
-	cert, err := buford.LoadCert(filename, password)
+	cert, err := cert.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
