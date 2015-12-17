@@ -1,27 +1,27 @@
-package buford_test
+package badge_test
 
 import (
 	"testing"
 
-	"github.com/RobotsAndPencils/buford"
+	"github.com/RobotsAndPencils/buford/payload/badge"
 )
 
 func TestDefaultBadge(t *testing.T) {
-	b := buford.Badge{}
+	b := badge.Badge{}
 	if _, ok := b.Number(); ok {
 		t.Errorf("Expected badge number to be omitted.")
 	}
 }
 
 func TestPreserveBadge(t *testing.T) {
-	b := buford.PreserveBadge
+	b := badge.Preserve
 	if _, ok := b.Number(); ok {
 		t.Errorf("Expected badge number to be omitted.")
 	}
 }
 
 func TestClearBadge(t *testing.T) {
-	b := buford.ClearBadge
+	b := badge.Clear
 	n, ok := b.Number()
 	if !ok {
 		t.Errorf("Expected badge to be set for removal.")
@@ -32,7 +32,7 @@ func TestClearBadge(t *testing.T) {
 }
 
 func TestNewBadge(t *testing.T) {
-	b := buford.NewBadge(4)
+	b := badge.New(4)
 	n, ok := b.Number()
 	if !ok {
 		t.Errorf("Expected badge to be set to change.")

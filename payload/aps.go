@@ -1,14 +1,21 @@
-package buford
+// Package payload
+package payload
 
-import "encoding/json"
+import (
+	"encoding/json"
 
-// Payload to be serialized to JSON.
-type Payload struct {
-	Alert Alert `json:"alert"`
+	"github.com/RobotsAndPencils/buford/payload/badge"
+)
+
+// APS is Apple's reserved namespace.
+type APS struct {
+	// Alert dictionary.
+	Alert Alert
 
 	// Badge to display on the app icon.
-	// See PreserveBadge (default), ClearBadge, NewBadge.
-	Badge Badge
+	// Set to badge.Preserve (default), badge.Clear
+	// or a specific value with badge.New(n).
+	Badge badge.Badge
 
 	// The name of a sound file to play as an alert.
 	Sound string
@@ -20,14 +27,9 @@ type Payload struct {
 	Category string
 }
 
-// MDMPayload for mobile device management.
-type MDMPayload struct {
-	Token string `json:"mdm"`
-}
-
 // Alert dictionary
 type Alert struct {
-	// Title is a short string shown briefly on Apple Watch in iOS 8.2.
+	// Title is a short string shown briefly on Apple Watch in iOS 8.2 or newer.
 	Title        string   `json:"title,omitempty"`
 	Body         string   `json:"body,omitempty"`
 	Action       string   `json:"action,omitempty"`
@@ -47,31 +49,33 @@ func (a *Alert) isZero() bool {
 	return a.isSimple() && len(a.Body) == 0
 }
 
-// MarshalJSON does marshal
-func (p Payload) MarshalJSON() ([]byte, error) {
+// Map returns the APS payload as a map that you can customize
+// before serializing it to JSON.
+func (a *APS) Map() map[string]interface{} {
 	aps := make(map[string]interface{}, 4)
 
-	if !p.Alert.isZero() {
-		if p.Alert.isSimple() {
-			aps["alert"] = p.Alert.Body
+	if !a.Alert.isZero() {
+		if a.Alert.isSimple() {
+			aps["alert"] = a.Alert.Body
 		} else {
-			aps["alert"] = p.Alert
+			aps["alert"] = a.Alert
 		}
 	}
-	if n, ok := p.Badge.Number(); ok {
+	if n, ok := a.Badge.Number(); ok {
 		aps["badge"] = n
 	}
-	if p.Sound != "" {
-		aps["sound"] = p.Sound
+	if a.Sound != "" {
+		aps["sound"] = a.Sound
 	}
-	if p.ContentAvailable {
+	if a.ContentAvailable {
 		aps["content-available"] = 1
 	}
 
 	// wrap in "aps" to form final payload
-	payload := struct {
-		APS map[string]interface{} `json:"aps"`
-	}{APS: aps}
+	return map[string]interface{}{"aps": aps}
+}
 
-	return json.Marshal(payload)
+// MarshalJSON allows you to json.Marshal(aps) directly.
+func (a APS) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.Map())
 }
