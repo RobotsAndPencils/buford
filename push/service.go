@@ -45,8 +45,17 @@ type response struct {
 	// timestamp, other fields?
 }
 
-// Push a notification.
-func (s *Service) Push(deviceToken string, headers Headers, payload []byte) error {
+// Push notification to APN service after performing serialization.
+func (s *Service) Push(deviceToken string, headers Headers, payload json.Marshaler) error {
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	return s.PushBytes(deviceToken, headers, b)
+}
+
+// PushBytes notification to APN service.
+func (s *Service) PushBytes(deviceToken string, headers Headers, payload []byte) error {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))

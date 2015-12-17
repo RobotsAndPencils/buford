@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log"
 
@@ -38,11 +37,7 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	b, err := json.Marshal(p)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = service.Push(deviceToken, push.Headers{}, b)
+	err = service.Push(deviceToken, push.Headers{}, p)
 	if err != nil {
 		log.Fatal(err)
 	}
