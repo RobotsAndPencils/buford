@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 
 	"github.com/RobotsAndPencils/buford"
 	"github.com/RobotsAndPencils/buford/cert"
+	"github.com/RobotsAndPencils/buford/payload"
+	"github.com/RobotsAndPencils/buford/payload/badge"
 )
 
 func main() {
@@ -30,7 +33,16 @@ func main() {
 		service.Host = buford.Live
 	}
 
-	err = service.Push(deviceToken, buford.Headers{}, []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`))
+	p := payload.APS{
+		Alert: payload.Alert{Body: "Hello HTTP/2"},
+		Badge: badge.New(42),
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		log.Fatalln("Unexpected error:", err)
+	}
+	err = service.Push(deviceToken, buford.Headers{}, b)
 	if err != nil {
 		log.Fatal(err)
 	}
