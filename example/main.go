@@ -5,10 +5,10 @@ import (
 	"flag"
 	"log"
 
-	"github.com/RobotsAndPencils/buford"
-	"github.com/RobotsAndPencils/buford/cert"
+	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/payload"
 	"github.com/RobotsAndPencils/buford/payload/badge"
+	"github.com/RobotsAndPencils/buford/push"
 )
 
 func main() {
@@ -20,17 +20,17 @@ func main() {
 	flag.StringVar(&environment, "e", "development", "Environment")
 	flag.Parse()
 
-	cert, err := cert.Load(filename, password)
+	cert, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	service := buford.Service{
-		Client: buford.NewClient(cert),
-		Host:   buford.Sandbox,
+	service := push.Service{
+		Client: push.NewClient(cert),
+		Host:   push.Sandbox,
 	}
 	if environment == "production" {
-		service.Host = buford.Live
+		service.Host = push.Live
 	}
 
 	p := payload.APS{
@@ -40,9 +40,9 @@ func main() {
 
 	b, err := json.Marshal(p)
 	if err != nil {
-		log.Fatalln("Unexpected error:", err)
+		log.Fatal(err)
 	}
-	err = service.Push(deviceToken, buford.Headers{}, b)
+	err = service.Push(deviceToken, push.Headers{}, b)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package buford
+package push_test
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/RobotsAndPencils/buford/push"
 )
 
 func TestPush(t *testing.T) {
@@ -31,12 +33,12 @@ func TestPush(t *testing.T) {
 		}
 	})
 
-	service := Service{
+	service := push.Service{
 		Client: http.DefaultClient,
 		Host:   server.URL,
 	}
 
-	err := service.Push(deviceToken, Headers{}, payload)
+	err := service.Push(deviceToken, push.Headers{}, payload)
 	if err != nil {
 		t.Error(err)
 	}

@@ -1,5 +1,5 @@
-// Package badge allows you to preserve, clear, or set the number displayed
-// on your the App icon.
+// Package badge allows you to preserve, set or clear the number displayed
+// on your App icon.
 package badge
 
 // Badge number to display on the App icon.

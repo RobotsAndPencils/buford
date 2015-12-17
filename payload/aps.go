@@ -1,4 +1,4 @@
-// Package payload
+// Package payload serializes a JSON payload to push.
 package payload
 
 import (
@@ -27,7 +27,7 @@ type APS struct {
 	Category string
 }
 
-// Alert dictionary
+// Alert dictionary.
 type Alert struct {
 	// Title is a short string shown briefly on Apple Watch in iOS 8.2 or newer.
 	Title        string   `json:"title,omitempty"`

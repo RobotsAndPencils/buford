@@ -1,6 +1,6 @@
-// Package cert loads Push Services certificates exported from your Keychain
-// in Personal Information Exchange format (*.p12).
-package cert
+// Package certificate loads Push Services certificates exported from your
+// Keychain in Personal Information Exchange format (*.p12).
+package certificate
 
 import (
 	"crypto/tls"

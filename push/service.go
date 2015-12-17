@@ -1,9 +1,9 @@
-// Package buford push notifications to Apple.
-package buford
+// Package push sends notifications over HTTP/2 to
+// Apple's Push Notification Service.
+package push
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,13 +13,13 @@ import (
 	"time"
 )
 
-// Apple host locations
+// Apple host locations.
 const (
 	Sandbox = "https://api.sandbox.push.apple.com"
 	Live    = "https://api.push.apple.com"
 )
 
-// Service is the Apple Push Notification Service.
+// Service is the Apple Push Notification Service that you send notifications to.
 type Service struct {
 	Client *http.Client
 	Host   string
@@ -27,29 +27,18 @@ type Service struct {
 
 // Headers sent with a push to control the notification.
 //
-// TODO: need more details on format and available headers.
+// TODO: need documentation on format of available headers.
 type Headers struct {
 	Expiration time.Time // apns-expiration
 	// apns-id
 	// other headers such as priority
 }
 
-// Service error responses
+// Service error responses.
 var (
 	ErrBadDeviceToken = errors.New("bad device token")
 	ErrForbidden      = errors.New("forbidden, check your certificate")
 )
-
-// NewClient sets up an HTTPS client.
-func NewClient(cert tls.Certificate) *http.Client {
-	config := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-	config.BuildNameToCertificate()
-	transport := &http.Transport{TLSClientConfig: config}
-
-	return &http.Client{Transport: transport}
-}
 
 type response struct {
 	Reason string `json:"reason"`
