@@ -4,7 +4,7 @@ Apple Push Notification (APN) Provider for Go 1.6 and HTTP/2.
 
 This is an _alpha_ release with some missing features.
 
-[![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford)
+[![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford) [![Build Status](https://travis-ci.org/RobotsAndPencils/buford.svg?branch=ci)](https://travis-ci.org/RobotsAndPencils/buford)
 
 ### Documentation
 
