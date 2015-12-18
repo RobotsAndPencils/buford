@@ -4,9 +4,11 @@ Apple Push Notification (APN) Provider for Go 1.6 and HTTP/2.
 
 This is an _alpha_ release with some missing features.
 
+[![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford)
+
 ### Documentation
 
-Buford uses Apple's new HTTP/2 API that was announced at WWDC 2015 and [released on December 17, 2015](https://developer.apple.com/news/?id=12172015b).
+Buford uses Apple's new HTTP/2 Notification API that was announced at WWDC 2015 and [released on December 17, 2015](https://developer.apple.com/news/?id=12172015b).
 
 [API documentation](https://godoc.org/github.com/RobotsAndPencils/buford/) is available from GoDoc.
 
