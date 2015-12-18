@@ -51,6 +51,7 @@ func (a *Alert) isZero() bool {
 
 // Map returns the APS payload as a map that you can customize
 // before serializing it to JSON.
+// TODO: Make this map implement json.Marshaler for use with Service.Push.
 func (a *APS) Map() map[string]interface{} {
 	aps := make(map[string]interface{}, 4)
 
