@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -25,13 +26,22 @@ type Service struct {
 	Host   string
 }
 
-// Headers sent with a push to control the notification.
-//
-// TODO: need documentation on format of available headers.
+// Headers sent with a push to control the notification (optional)
 type Headers struct {
-	Expiration time.Time // apns-expiration
-	// apns-id
-	// other headers such as priority
+	// ID for the notification. Apple generates one if ommitted.
+	// This should be a UUID with 32 lowercase hexadecimal digits.
+	// TODO: use a UUID type.
+	ID string
+
+	// Apple will retry delivery until this time. The default behavior only tries once.
+	Expiration time.Time
+
+	// Allow Apple to group messages to together to reduce power consumption.
+	// By default messages are sent immediately.
+	LowPriority bool
+
+	// Topic is the bundle ID for your app.
+	Topic string
 }
 
 // Service error responses.
@@ -46,7 +56,7 @@ type response struct {
 }
 
 // Push notification to APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers Headers, payload json.Marshaler) error {
+func (s *Service) Push(deviceToken string, headers *Headers, payload json.Marshaler) error {
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -55,7 +65,7 @@ func (s *Service) Push(deviceToken string, headers Headers, payload json.Marshal
 }
 
 // PushBytes notification to APN service.
-func (s *Service) PushBytes(deviceToken string, headers Headers, payload []byte) error {
+func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) error {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
@@ -63,7 +73,7 @@ func (s *Service) PushBytes(deviceToken string, headers Headers, payload []byte)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	// TODO: set the apns-* headers
+	headers.set(req)
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
@@ -97,4 +107,28 @@ func (s *Service) PushBytes(deviceToken string, headers Headers, payload []byte)
 		return ErrForbidden
 	}
 	return fmt.Errorf("Error response: %v", response.Reason)
+}
+
+// set headers on an HTTP request
+func (h *Headers) set(req *http.Request) {
+	// headers are optional
+	if h == nil {
+		return
+	}
+
+	if h.ID != "" {
+		req.Header.Set("apns-id", h.ID)
+	} // when ommitted, Apple will generate a UUID for you
+
+	if !h.Expiration.IsZero() {
+		req.Header.Set("apns-expiration", strconv.FormatInt(h.Expiration.Unix(), 10))
+	}
+
+	if h.LowPriority {
+		req.Header.Set("apns-priority", "5")
+	} // when ommitted, the default priority is 10
+
+	if h.Topic != "" {
+		req.Header.Set("apns-topic", h.Topic)
+	}
 }

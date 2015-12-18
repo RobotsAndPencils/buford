@@ -38,7 +38,7 @@ func TestPush(t *testing.T) {
 		Host:   server.URL,
 	}
 
-	err := service.PushBytes(deviceToken, push.Headers{}, payload)
+	err := service.PushBytes(deviceToken, &push.Headers{}, payload)
 	if err != nil {
 		t.Error(err)
 	}

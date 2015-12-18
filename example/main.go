@@ -37,7 +37,7 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	err = service.Push(deviceToken, push.Headers{}, p)
+	err = service.Push(deviceToken, &push.Headers{}, p)
 	if err != nil {
 		log.Fatal(err)
 	}
