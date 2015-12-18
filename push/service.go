@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -86,16 +85,11 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	}
 
 	// read entire response body
-	// TODO: could decode while reading instead if not logging body too
+	// TODO: could decode while reading instead
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-
-	// http.StatusBadRequest, http.StatusForbidden
-	log.Println(resp.StatusCode)
-	// logging full responses while learning the API
-	log.Println(string(body))
 
 	var response response
 	json.Unmarshal(body, &response)
