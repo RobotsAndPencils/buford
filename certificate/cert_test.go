@@ -7,7 +7,8 @@ import (
 )
 
 func TestValidCert(t *testing.T) {
-	const name = "/Users/nathany/src/github.com/RobotsAndPencils/nx-client/ruby/Pushy.p12"
+	// TODO: figure out how to test certificate loading and validation in CI
+	const name = "../cert.p12"
 
 	_, err := certificate.Load(name, "")
 	if err != nil {
@@ -16,7 +17,8 @@ func TestValidCert(t *testing.T) {
 }
 
 func TestExpiredCert(t *testing.T) {
-	const name = "/Users/nathany/src/github.com/RobotsAndPencils/nx-client/ruby/Pushy-expired.p12"
+	// TODO: figure out how to test certificate loading and validation in CI
+	const name = "../cert-expired.p12"
 
 	_, err := certificate.Load(name, "")
 	if err != certificate.ErrExpired {
