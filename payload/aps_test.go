@@ -24,11 +24,17 @@ func TestBadgeAndSound(t *testing.T) {
 }
 
 func TestContentAvailable(t *testing.T) {
-	p := payload.APS{
-		ContentAvailable: true,
-	}
+	p := payload.APS{ContentAvailable: true}
 	expected := []byte(`{"aps":{"content-available":1}}`)
 	testPayload(t, p, expected)
+}
+
+func TestCustomArray(t *testing.T) {
+	p := payload.APS{Alert: payload.Alert{Body: "Message received from Bob"}}
+	pm := p.Map()
+	pm["acme2"] = []string{"bang", "whiz"}
+	expected := []byte(`{"acme2":["bang","whiz"],"aps":{"alert":"Message received from Bob"}}`)
+	testPayload(t, pm, expected)
 }
 
 func TestAlertDictionary(t *testing.T) {
