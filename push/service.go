@@ -15,8 +15,8 @@ import (
 
 // Apple host locations.
 const (
-	Sandbox = "https://api.sandbox.push.apple.com"
-	Live    = "https://api.push.apple.com"
+	Development = "https://api.development.push.apple.com"
+	Production  = "https://api.push.apple.com"
 )
 
 // Service is the Apple Push Notification Service that you send notifications to.

@@ -26,10 +26,10 @@ func main() {
 
 	service := push.Service{
 		Client: push.NewClient(cert),
-		Host:   push.Sandbox,
+		Host:   push.Development,
 	}
 	if environment == "production" {
-		service.Host = push.Live
+		service.Host = push.Production
 	}
 
 	p := payload.APS{
