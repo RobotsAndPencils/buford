@@ -71,7 +71,7 @@ func main() {
 
 	service := push.Service{
 		Client: push.NewClient(cert),
-		Host:   push.Sandbox,
+		Host:   push.Development,
 	}
 
 	p := payload.APS{
