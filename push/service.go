@@ -39,7 +39,7 @@ type Headers struct {
 	// By default messages are sent immediately.
 	LowPriority bool
 
-	// Topic is the bundle ID for your app.
+	// Topic for certificates with multiple topics.
 	Topic string
 }
 
@@ -50,45 +50,47 @@ var (
 )
 
 type response struct {
+	// Reason for failure
 	Reason string `json:"reason"`
-	// timestamp, other fields?
+	// Timestamp for 410 errors (maybe this is an int)
+	Timestamp string `json:"timestamp"`
 }
 
 // Push notification to APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers *Headers, payload json.Marshaler) error {
+func (s *Service) Push(deviceToken string, headers *Headers, payload json.Marshaler) (string, error) {
 	b, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return "", err
 	}
 	return s.PushBytes(deviceToken, headers, b)
 }
 
 // PushBytes notification to APN service.
-func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) error {
+func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) (string, error) {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	headers.set(req)
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return nil
+		return resp.Header.Get("apns-id"), nil
 	}
 
 	// read entire response body
 	// TODO: could decode while reading instead
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var response response
@@ -96,11 +98,11 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 
 	switch response.Reason {
 	case "BadDeviceToken":
-		return ErrBadDeviceToken
+		return "", ErrBadDeviceToken
 	case "Forbidden":
-		return ErrForbidden
+		return "", ErrForbidden
 	}
-	return fmt.Errorf("Error response: %v", response.Reason)
+	return "", fmt.Errorf("Error response: %v", response.Reason)
 }
 
 // set headers on an HTTP request

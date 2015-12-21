@@ -14,6 +14,7 @@ import (
 func TestPush(t *testing.T) {
 	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
 	payload := []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`)
+	apnsID := "922D9F1F-B82E-B337-EDC9-DB4FC8527676"
 
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
@@ -31,6 +32,8 @@ func TestPush(t *testing.T) {
 		if !reflect.DeepEqual(body, payload) {
 			t.Errorf("Expected body %v, got %v", payload, body)
 		}
+
+		w.Header().Set("apns-id", apnsID)
 	})
 
 	service := push.Service{
@@ -38,8 +41,11 @@ func TestPush(t *testing.T) {
 		Host:   server.URL,
 	}
 
-	err := service.PushBytes(deviceToken, &push.Headers{}, payload)
+	id, err := service.PushBytes(deviceToken, &push.Headers{}, payload)
 	if err != nil {
 		t.Error(err)
+	}
+	if id != apnsID {
+		t.Errorf("Expected apns-id %q, but got %q.", apnsID, id)
 	}
 }

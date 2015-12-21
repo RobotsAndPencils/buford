@@ -37,8 +37,9 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	err = service.Push(deviceToken, &push.Headers{}, p)
+	id, err := service.Push(deviceToken, &push.Headers{}, p)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("apns-id:", id)
 }
