@@ -130,7 +130,7 @@ type response struct {
 const statusTooManyRequests = 429
 
 // Push notification to APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers *Headers, payload json.Marshaler) (string, error) {
+func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) (string, error) {
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
