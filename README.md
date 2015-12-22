@@ -60,7 +60,7 @@ import (
 
 func main() {
 	// set these variables appropriately
-	filename := "/path/to/certifate.p12"
+	filename := "/path/to/certificate.p12"
 	password := ""
 	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
 
