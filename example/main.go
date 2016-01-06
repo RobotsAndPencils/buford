@@ -26,10 +26,10 @@ func main() {
 
 	service := push.Service{
 		Client: push.NewClient(cert),
-		Host:   push.Sandbox,
+		Host:   push.Development,
 	}
 	if environment == "production" {
-		service.Host = push.Live
+		service.Host = push.Production
 	}
 
 	p := payload.APS{
@@ -37,8 +37,9 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	err = service.Push(deviceToken, &push.Headers{}, p)
+	id, err := service.Push(deviceToken, &push.Headers{}, p)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("apns-id:", id)
 }
