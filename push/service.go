@@ -1,3 +1,5 @@
+// +build go1.6
+
 // Package push sends notifications over HTTP/2 to
 // Apple's Push Notification Service.
 package push
