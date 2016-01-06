@@ -49,3 +49,26 @@ func TestPush(t *testing.T) {
 		t.Errorf("Expected apns-id %q, but got %q.", apnsID, id)
 	}
 }
+
+func TestBadPriorityPush(t *testing.T) {
+	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
+	payload := []byte(`{ "aps" : { "alert" : "Hello HTTP/2" } }`)
+
+	handler := http.NewServeMux()
+	server := httptest.NewServer(handler)
+
+	handler.HandleFunc("/3/device/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"reason": "BadPriority"}`))
+	})
+
+	service := push.Service{
+		Client: http.DefaultClient,
+		Host:   server.URL,
+	}
+
+	_, err := service.PushBytes(deviceToken, nil, payload)
+	if err != push.ErrBadPriority {
+		t.Errorf("Expected error %v, got %v.", push.ErrBadPriority, err)
+	}
+}
