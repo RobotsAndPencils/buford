@@ -20,7 +20,8 @@ type APS struct {
 	// The name of a sound file to play as an alert.
 	Sound string
 
-	// Content available apps launched in the background or resumed...
+	// Content available for silent notifications.
+	// With no alert, sound, or badge.
 	ContentAvailable bool
 
 	// Category identifier for custom actions in iOS 8 or newer.
@@ -31,22 +32,29 @@ type APS struct {
 type Alert struct {
 	// Title is a short string shown briefly on Apple Watch in iOS 8.2 or newer.
 	Title        string   `json:"title,omitempty"`
-	Body         string   `json:"body,omitempty"`
-	Action       string   `json:"action,omitempty"`
-	LocKey       string   `json:"loc-key,omitempty"`
-	LocArgs      []string `json:"loc-args,omitempty"`
-	ActionLocKey string   `json:"action-loc-key,omitempty"`
-	LaunchImage  string   `json:"launch-image,omitempty"`
+	TitleLocKey  string   `json:"title-loc-key,omitempty"`
+	TitleLocArgs []string `json:"title-loc-args,omitempty"`
+
+	// Body text of the alert message.
+	Body    string   `json:"body,omitempty"`
+	LocKey  string   `json:"loc-key,omitempty"`
+	LocArgs []string `json:"loc-args,omitempty"`
+
+	// Key for localized string for "View" button.
+	ActionLocKey string `json:"action-loc-key,omitempty"`
+
+	// Image file to be used when user taps or slides the action button.
+	LaunchImage string `json:"launch-image,omitempty"`
 }
 
 // isSimple alert with only Body set.
 func (a *Alert) isSimple() bool {
-	return len(a.Title) == 0 && len(a.Action) == 0 && len(a.LocKey) == 0 && len(a.LocArgs) == 0 && len(a.ActionLocKey) == 0 && len(a.LaunchImage) == 0
+	return len(a.Title) == 0 && len(a.TitleLocKey) == 0 && len(a.TitleLocArgs) == 0 && len(a.LocKey) == 0 && len(a.LocArgs) == 0 && len(a.ActionLocKey) == 0 && len(a.LaunchImage) == 0
 }
 
 // isZero if no Alert fields are set.
 func (a *Alert) isZero() bool {
-	return a.isSimple() && len(a.Body) == 0
+	return len(a.Body) == 0 && a.isSimple()
 }
 
 // Map returns the APS payload as a map that you can customize
