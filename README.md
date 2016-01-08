@@ -44,7 +44,7 @@ go get -u golang.org/x/crypto/pkcs12
 
 The API is not yet stable. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
 
-### Example
+### Examples
 
 ```go
 package main
@@ -79,11 +79,40 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	err = service.Push(deviceToken, &push.Headers{}, p)
+	id, err = service.Push(deviceToken, nil, p)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 ```
 
-A more complete example can be found in [the example folder](https://github.com/RobotsAndPencils/buford/tree/master/example).
+#### Custom values
+
+To add custom values to an APS payload, use the Map method as follows:
+
+```go
+p := payload.APS{
+	Alert: payload.Alert{Body: "Message received from Bob"},
+}
+pm := p.Map()
+pm["acme2"] = []string{"bang", "whiz"}
+
+id, err = service.Push(deviceToken, nil, pm)
+```
+
+The Push method will use json.Marshal to serialize whatever you send it.
+
+#### Resend the same payload
+
+Use json.Marshal to serialize your payload once and then send it to multiple device tokens with PushBytes.
+
+```go
+b, err := json.Marshal(payload)
+if err != nil {
+	log.Fatal(err)
+}
+
+id, err := service.PushBytes(deviceToken, nil, b)
+```
+
+Whether you use Push or PushBytes the underlying HTTP/2 connection to APNS will be reused.
