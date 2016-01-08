@@ -149,7 +149,7 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	headers.set(req)
+	headers.set(req.Header)
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
@@ -202,26 +202,26 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	return "", ErrUnknown
 }
 
-// set headers on an HTTP request
-func (h *Headers) set(req *http.Request) {
+// set headers for an HTTP request
+func (h *Headers) set(reqHeader http.Header) {
 	// headers are optional
 	if h == nil {
 		return
 	}
 
 	if h.ID != "" {
-		req.Header.Set("apns-id", h.ID)
+		reqHeader.Set("apns-id", h.ID)
 	} // when ommitted, Apple will generate a UUID for you
 
 	if !h.Expiration.IsZero() {
-		req.Header.Set("apns-expiration", strconv.FormatInt(h.Expiration.Unix(), 10))
+		reqHeader.Set("apns-expiration", strconv.FormatInt(h.Expiration.Unix(), 10))
 	}
 
 	if h.LowPriority {
-		req.Header.Set("apns-priority", "5")
+		reqHeader.Set("apns-priority", "5")
 	} // when ommitted, the default priority is 10
 
 	if h.Topic != "" {
-		req.Header.Set("apns-topic", h.Topic)
+		reqHeader.Set("apns-topic", h.Topic)
 	}
 }
