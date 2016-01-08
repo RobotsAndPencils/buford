@@ -2,7 +2,6 @@ sudo: false
 language: go
 
 go:
-   - tip
    - 1.6beta1
 
 before_script:
