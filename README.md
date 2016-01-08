@@ -85,6 +85,21 @@ func main() {
 	}
 }
 ```
+#### Headers
+
+You can specify an ID, expiration, priority, and other parameters via the Headers struct.
+
+```go
+headers := &push.Headers{
+	ID:          "922D9F1F-B82E-B337-EDC9-DB4FC8527676",
+	Expiration:  time.Now().Add(time.Hour),
+	LowPriority: true,
+}
+
+id, err = service.Push(deviceToken, headers, p)
+```
+
+If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should be used when sending a ContentAvailable payload.
 
 #### Custom values
 
@@ -107,7 +122,7 @@ The Push method will use json.Marshal to serialize whatever you send it.
 Use json.Marshal to serialize your payload once and then send it to multiple device tokens with PushBytes.
 
 ```go
-b, err := json.Marshal(payload)
+b, err := json.Marshal(p)
 if err != nil {
 	log.Fatal(err)
 }
