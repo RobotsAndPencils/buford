@@ -19,7 +19,20 @@ type BrowserAlert struct {
 }
 
 // MarshalJSON allows you to json.Marshal(browser) directly.
-func (b Browser) MarshalJSON() ([]byte, error) {
-	aps := map[string]interface{}{"alert": b.Alert, "url-args": b.URLArgs}
+func (p Browser) MarshalJSON() ([]byte, error) {
+	aps := map[string]interface{}{"alert": p.Alert, "url-args": p.URLArgs}
 	return json.Marshal(map[string]interface{}{"aps": aps})
+}
+
+// Validate browser payload.
+func (p *Browser) Validate() error {
+	if p == nil {
+		return ErrIncomplete
+	}
+
+	// must have both a title and body. action and url-args are optional.
+	if len(p.Alert.Title) == 0 || len(p.Alert.Body) == 0 {
+		return ErrIncomplete
+	}
+	return nil
 }
