@@ -1,4 +1,3 @@
-// Package payload serializes a JSON payload to push.
 package payload
 
 import (
@@ -87,4 +86,17 @@ func (a *APS) Map() map[string]interface{} {
 // MarshalJSON allows you to json.Marshal(aps) directly.
 func (a APS) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Map())
+}
+
+// Validate APS payload.
+func (a *APS) Validate() error {
+	if a == nil {
+		return ErrIncomplete
+	}
+
+	// must have a body or a badge (or custom data)
+	if len(a.Alert.Body) == 0 && a.Badge == badge.Preserve {
+		return ErrIncomplete
+	}
+	return nil
 }
