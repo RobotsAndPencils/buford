@@ -92,7 +92,6 @@ var (
 	// HTTP Status errors.
 
 	ErrBadRequest = errors.New("bad request")
-	ErrGone       = errors.New("the device token is no longer active for the topic")
 	ErrUnknown    = errors.New("unknown error")
 )
 
@@ -137,9 +136,9 @@ var errorStatus = map[int]error{
 	http.StatusBadRequest:            ErrBadRequest,
 	http.StatusForbidden:             ErrForbidden,
 	http.StatusMethodNotAllowed:      ErrMethodNotAllowed,
-	http.StatusGone:                  ErrGone,
+	http.StatusGone:                  ErrUnregistered,
 	http.StatusRequestEntityTooLarge: ErrPayloadTooLarge,
-	statusTooManyRequests:            ErrTooManyRequests,
+	http.StatusTooManyRequests:       ErrTooManyRequests,
 	http.StatusInternalServerError:   ErrInternalServerError,
 	http.StatusServiceUnavailable:    ErrServiceUnavailable,
 }
@@ -150,8 +149,6 @@ type response struct {
 	// Timestamp for 410 StatusGone (ErrUnregistered)
 	Timestamp int64 `json:"timestamp"`
 }
-
-const statusTooManyRequests = 429
 
 // Push notification to APN service after performing serialization.
 func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) (string, error) {
