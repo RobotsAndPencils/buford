@@ -92,7 +92,6 @@ var (
 	// HTTP Status errors.
 
 	ErrBadRequest = errors.New("bad request")
-	ErrGone       = errors.New("the device token is no longer active for the topic")
 	ErrUnknown    = errors.New("unknown error")
 )
 
@@ -137,7 +136,7 @@ var errorStatus = map[int]error{
 	http.StatusBadRequest:            ErrBadRequest,
 	http.StatusForbidden:             ErrForbidden,
 	http.StatusMethodNotAllowed:      ErrMethodNotAllowed,
-	http.StatusGone:                  ErrGone,
+	http.StatusGone:                  ErrUnregistered,
 	http.StatusRequestEntityTooLarge: ErrPayloadTooLarge,
 	statusTooManyRequests:            ErrTooManyRequests,
 	http.StatusInternalServerError:   ErrInternalServerError,
