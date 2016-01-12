@@ -96,6 +96,17 @@ var (
 	ErrUnknown    = errors.New("unknown error")
 )
 
+// Error with a timestamp
+type Error struct {
+	Err         error
+	Timestamp   time.Time
+	DeviceToken string
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("%v (device token %v last invalid at %v)", e.Err.Error(), e.DeviceToken, e.Timestamp)
+}
+
 var errorReason = map[string]error{
 	"PayloadEmpty":              ErrPayloadEmpty,
 	"PayloadTooLarge":           ErrPayloadTooLarge,
@@ -122,11 +133,22 @@ var errorReason = map[string]error{
 	"MissingTopic":              ErrMissingTopic,
 }
 
+var errorStatus = map[int]error{
+	http.StatusBadRequest:            ErrBadRequest,
+	http.StatusForbidden:             ErrForbidden,
+	http.StatusMethodNotAllowed:      ErrMethodNotAllowed,
+	http.StatusGone:                  ErrGone,
+	http.StatusRequestEntityTooLarge: ErrPayloadTooLarge,
+	statusTooManyRequests:            ErrTooManyRequests,
+	http.StatusInternalServerError:   ErrInternalServerError,
+	http.StatusServiceUnavailable:    ErrServiceUnavailable,
+}
+
 type response struct {
 	// Reason for failure
 	Reason string `json:"reason"`
-	// Timestamp for 410 errors (maybe this is an int)
-	Timestamp string `json:"timestamp"`
+	// Timestamp for 410 StatusGone (ErrUnregistered)
+	Timestamp int64 `json:"timestamp"`
 }
 
 const statusTooManyRequests = 429
@@ -171,35 +193,26 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	var response response
 	json.Unmarshal(body, &response)
 
-	if e, ok := errorReason[response.Reason]; ok {
+	e, ok := errorReason[response.Reason]
+	if !ok {
+		// fallback to HTTP status codes if reason not found in JSON
+		e, ok = errorStatus[resp.StatusCode]
+		if !ok {
+			e = ErrUnknown
+		}
+	}
+
+	// error constant if there was no timestamp
+	if response.Timestamp == 0 {
 		return "", e
 	}
 
-	// fallback to HTTP status codes if reason not found in JSON
-
-	switch resp.StatusCode {
-	case http.StatusBadRequest:
-		return "", ErrBadRequest
-	case http.StatusForbidden:
-		return "", ErrForbidden
-	case http.StatusMethodNotAllowed:
-		return "", ErrMethodNotAllowed
-	case http.StatusGone:
-		// TODO: this should return an error structure with timestamp
-		// but I don't know the format of timestamp (Unix time?)
-		// and there may be a JSON response handled above (ErrUnregistered?)
-		return "", ErrGone
-	case http.StatusRequestEntityTooLarge:
-		return "", ErrPayloadTooLarge
-	case statusTooManyRequests:
-		return "", ErrTooManyRequests
-	case http.StatusInternalServerError:
-		return "", ErrInternalServerError
-	case http.StatusServiceUnavailable:
-		return "", ErrServiceUnavailable
+	// error struct with a timestamp
+	return "", &Error{
+		Err:         e,
+		Timestamp:   time.Unix(response.Timestamp, 0),
+		DeviceToken: deviceToken,
 	}
-
-	return "", ErrUnknown
 }
 
 // set headers for an HTTP request
