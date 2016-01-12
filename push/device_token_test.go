@@ -25,6 +25,7 @@ func TestInvalidDeviceTokens(t *testing.T) {
 func TestValidDeviceToken(t *testing.T) {
 	tokens := []string{
 		"c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433",
+		"c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954ac2732227a1d8021cfaf781d71fb2f908c61f5861079a00954ac2732227a1d8021cfaf781d71fb2f908c61f5861079a00954ac2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a",
 	}
 
 	for _, token := range tokens {
