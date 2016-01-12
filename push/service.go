@@ -138,7 +138,7 @@ var errorStatus = map[int]error{
 	http.StatusMethodNotAllowed:      ErrMethodNotAllowed,
 	http.StatusGone:                  ErrUnregistered,
 	http.StatusRequestEntityTooLarge: ErrPayloadTooLarge,
-	statusTooManyRequests:            ErrTooManyRequests,
+	http.StatusTooManyRequests:       ErrTooManyRequests,
 	http.StatusInternalServerError:   ErrInternalServerError,
 	http.StatusServiceUnavailable:    ErrServiceUnavailable,
 }
@@ -149,8 +149,6 @@ type response struct {
 	// Timestamp for 410 StatusGone (ErrUnregistered)
 	Timestamp int64 `json:"timestamp"`
 }
-
-const statusTooManyRequests = 429
 
 // Push notification to APN service after performing serialization.
 func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) (string, error) {
