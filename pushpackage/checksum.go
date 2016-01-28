@@ -7,13 +7,11 @@ import (
 )
 
 // copyAndChecksum calculates a checksum while writing to another output
-func copyAndChecksum(w io.Writer, r io.Reader) (checksum string, err error) {
+func copyAndChecksum(w io.Writer, r io.Reader) (string, error) {
 	h := sha1.New()
 	mw := io.MultiWriter(w, h)
-	_, err = io.Copy(mw, r)
-	if err != nil {
+	if _, err := io.Copy(mw, r); err != nil {
 		return "", err
 	}
-	checksum = hex.EncodeToString(h.Sum(nil))
-	return checksum, nil
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
