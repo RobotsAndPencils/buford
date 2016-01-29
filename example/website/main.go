@@ -17,7 +17,7 @@ var (
 		Name:                "Buford",
 		PushID:              "web.com.github.RobotsAndPencils.buford",
 		AllowedDomains:      []string{"https://c73445e5.ngrok.io"},
-		URLFormatString:     `http://c73445e5.ngrok.io/%@/?q=%@`,
+		URLFormatString:     `https://c73445e5.ngrok.io/%@/?q=%@`,
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
 		WebServiceURL:       "https://c73445e5.ngrok.io",
 	}
@@ -25,7 +25,7 @@ var (
 	templates = template.Must(template.ParseFiles("index.html"))
 )
 
-func requestPermission(w http.ResponseWriter, r *http.Request) {
+func requestPermissionHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "index.html", website)
 }
 
@@ -37,7 +37,7 @@ func MustOpen(name string) *os.File {
 	return f
 }
 
-func pushPackages(w http.ResponseWriter, r *http.Request) {
+func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/zip")
 
 	const iconPath = "../../pushpackage/fixtures/"
@@ -86,8 +86,8 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", requestPermission)
-	http.HandleFunc("/v1/pushPackages/"+website.PushID, pushPackages)
+	http.HandleFunc("/", requestPermissionHandler)
+	http.HandleFunc("/v1/pushPackages/"+website.PushID, pushPackagesHandler)
 	http.HandleFunc("/v1/log", logHandler)
 	http.ListenAndServe(":5000", nil)
 }
