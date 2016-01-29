@@ -32,7 +32,7 @@ func New(buf io.Writer, website *Website, iconset IconSet) error {
 
 	for _, icon := range iconset {
 		// NOTE: only forward slashes are allowed in zip files
-		// (path rather than filepath)
+		// (therefore using path rather than filepath)
 		name := path.Join(iconDirectory, icon.Name)
 
 		zf, err := z.Create(name)
@@ -57,6 +57,11 @@ func New(buf io.Writer, website *Website, iconset IconSet) error {
 
 	// TODO: sign manifest.json with PKCS #7
 	// and add signature to the zip file
+	zf, err = z.Create("signature")
+	if err != nil {
+		return err
+	}
+	zf.Write([]byte(``))
 
 	return z.Close()
 }
