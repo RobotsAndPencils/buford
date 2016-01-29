@@ -15,8 +15,8 @@ import (
 )
 
 // New push package.
-func New(buf io.Writer, website *Website, iconset IconSet, cert *x509.Certificate, key *rsa.PrivateKey) error {
-	z := zip.NewWriter(buf)
+func New(w io.Writer, website *Website, iconset IconSet, cert *x509.Certificate, key *rsa.PrivateKey) error {
+	z := zip.NewWriter(w)
 
 	// manifest is a map of relative file paths to their SHA checksums
 	manifest := make(map[string]string, len(iconset)+1)

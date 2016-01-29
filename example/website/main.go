@@ -6,24 +6,23 @@ import (
 	"encoding/json"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/pushpackage"
-	"golang.org/x/crypto/pkcs12"
 )
 
 var (
 	website = pushpackage.Website{
 		Name:                "Buford",
 		PushID:              "web.com.github.RobotsAndPencils.buford",
-		AllowedDomains:      []string{"https://59e9995b.ngrok.io"},
-		URLFormatString:     `https://59e9995b.ngrok.io/%@/?q=%@`,
+		AllowedDomains:      []string{"https://e2f9f182.ngrok.io"},
+		URLFormatString:     `https://e2f9f182.ngrok.io/%@/?q=%@`,
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
-		WebServiceURL:       "https://59e9995b.ngrok.io",
+		WebServiceURL:       "https://e2f9f182.ngrok.io",
 	}
 
 	templates = template.Must(template.ParseFiles("index.html"))
@@ -33,6 +32,7 @@ func requestPermissionHandler(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "index.html", website)
 }
 
+// MustOpen a file or fail.
 func MustOpen(name string) *os.File {
 	f, err := os.Open(name)
 	if err != nil {
@@ -89,23 +89,18 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Cert and private key for signing push packages.
 var (
 	Cert       *x509.Certificate
 	PrivateKey *rsa.PrivateKey
 )
 
 func main() {
-	p12, err := ioutil.ReadFile("../../cert-website.p12")
+	var err error
+	Cert, PrivateKey, err = certificate.Load("../../cert-website.p12", "")
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	key, cert, err := pkcs12.Decode(p12, "")
-	if err != nil {
-		log.Fatal(err)
-	}
-	Cert = cert
-	PrivateKey = key.(*rsa.PrivateKey)
 
 	http.HandleFunc("/", requestPermissionHandler)
 	http.HandleFunc("/v1/pushPackages/"+website.PushID, pushPackagesHandler)
