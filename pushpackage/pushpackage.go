@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"os"
 	"path"
 )
 
@@ -43,12 +44,13 @@ func New(buf io.Writer, website *Website, iconset IconSet) error {
 		manifest[name] = checksum
 	}
 
-	log.Println(manifest)
-
 	manifestBytes, err := json.Marshal(manifest)
 	if err != nil {
 		return err
 	}
+
+	log.Println(string(manifestBytes))
+
 	zf, err = z.Create("manifest.json")
 	if err != nil {
 		return err
@@ -61,7 +63,13 @@ func New(buf io.Writer, website *Website, iconset IconSet) error {
 	if err != nil {
 		return err
 	}
-	zf.Write([]byte(``))
+	sig, err := os.Open("./signature")
+	if err != nil {
+		return err
+	}
+	defer sig.Close()
+	io.Copy(zf, sig)
+	// zf.Write([]byte(``))
 
 	return z.Close()
 }
