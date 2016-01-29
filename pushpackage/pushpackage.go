@@ -4,15 +4,18 @@ package pushpackage
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
 	"io"
 	"log"
-	"os"
 	"path"
+
+	"github.com/st3fan/gocrypto/pkcs7"
 )
 
 // New push package.
-func New(buf io.Writer, website *Website, iconset IconSet) error {
+func New(buf io.Writer, website *Website, iconset IconSet, cert *x509.Certificate, key *rsa.PrivateKey) error {
 	z := zip.NewWriter(buf)
 
 	// manifest is a map of relative file paths to their SHA checksums
@@ -57,19 +60,17 @@ func New(buf io.Writer, website *Website, iconset IconSet) error {
 	}
 	zf.Write(manifestBytes)
 
-	// TODO: sign manifest.json with PKCS #7
+	// sign manifest.json with PKCS #7
 	// and add signature to the zip file
 	zf, err = z.Create("signature")
 	if err != nil {
 		return err
 	}
-	sig, err := os.Open("./signature")
+	sig, err := pkcs7.Sign(bytes.NewReader(manifestBytes), cert, key)
 	if err != nil {
 		return err
 	}
-	defer sig.Close()
-	io.Copy(zf, sig)
-	// zf.Write([]byte(``))
+	zf.Write(sig)
 
 	return z.Close()
 }

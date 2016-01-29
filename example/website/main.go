@@ -1,25 +1,29 @@
 package main
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/RobotsAndPencils/buford/pushpackage"
+	"golang.org/x/crypto/pkcs12"
 )
 
 var (
 	website = pushpackage.Website{
 		Name:                "Buford",
 		PushID:              "web.com.github.RobotsAndPencils.buford",
-		AllowedDomains:      []string{"https://c73445e5.ngrok.io"},
-		URLFormatString:     `https://c73445e5.ngrok.io/%@/?q=%@`,
+		AllowedDomains:      []string{"https://59e9995b.ngrok.io"},
+		URLFormatString:     `https://59e9995b.ngrok.io/%@/?q=%@`,
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
-		WebServiceURL:       "https://c73445e5.ngrok.io",
+		WebServiceURL:       "https://59e9995b.ngrok.io",
 	}
 
 	templates = template.Must(template.ParseFiles("index.html"))
@@ -64,7 +68,7 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 		{Name: "icon_16x16.png", Reader: icon16},
 	}
 
-	if err := pushpackage.New(w, &website, iconset); err != nil {
+	if err := pushpackage.New(w, &website, iconset, Cert, PrivateKey); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -85,7 +89,24 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var (
+	Cert       *x509.Certificate
+	PrivateKey *rsa.PrivateKey
+)
+
 func main() {
+	p12, err := ioutil.ReadFile("../../cert-website.p12")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	key, cert, err := pkcs12.Decode(p12, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	Cert = cert
+	PrivateKey = key.(*rsa.PrivateKey)
+
 	http.HandleFunc("/", requestPermissionHandler)
 	http.HandleFunc("/v1/pushPackages/"+website.PushID, pushPackagesHandler)
 	http.HandleFunc("/v1/log", logHandler)

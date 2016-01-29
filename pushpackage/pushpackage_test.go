@@ -3,12 +3,14 @@ package pushpackage_test
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/rsa"
 	"io/ioutil"
 	"log"
 	"os"
 	"testing"
 
 	"github.com/RobotsAndPencils/buford/pushpackage"
+	"golang.org/x/crypto/pkcs12"
 )
 
 func TestNew(t *testing.T) {
@@ -34,8 +36,18 @@ func TestNew(t *testing.T) {
 		},
 	}
 
+	p12, err := ioutil.ReadFile("../cert-website.p12")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	privateKey, cert, err := pkcs12.Decode(p12, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	buf := new(bytes.Buffer)
-	err = pushpackage.New(buf, website, iconset)
+	err = pushpackage.New(buf, website, iconset, cert, privateKey.(*rsa.PrivateKey))
 	if err != nil {
 		t.Fatal(err)
 	}
