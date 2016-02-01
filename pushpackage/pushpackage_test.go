@@ -3,18 +3,15 @@ package pushpackage_test
 import (
 	"archive/zip"
 	"bytes"
-	"crypto/rsa"
 	"io/ioutil"
-	"log"
-	"os"
 	"testing"
 
+	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/pushpackage"
-	"golang.org/x/crypto/pkcs12"
 )
 
 func TestNew(t *testing.T) {
-	website := &pushpackage.Website{
+	website := pushpackage.Website{
 		Name:                "Bay Airlines",
 		PushID:              "web.com.example.domain",
 		AllowedDomains:      []string{"http://domain.example.com"},
@@ -23,32 +20,17 @@ func TestNew(t *testing.T) {
 		WebServiceURL:       "https://example.com/push",
 	}
 
-	r, err := os.Open("../fixtures/gopher.png")
+	cert, privateKey, err := certificate.Load("../fixtures/cert.p12", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r.Close()
-
-	iconset := pushpackage.IconSet{
-		{
-			Name:   "icon_128x128@2x.png",
-			Reader: r,
-		},
-	}
-
-	p12, err := ioutil.ReadFile("../fixtures/cert.p12")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	privateKey, cert, err := pkcs12.Decode(p12, "")
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	buf := new(bytes.Buffer)
-	err = pushpackage.New(buf, website, iconset, cert, privateKey.(*rsa.PrivateKey))
-	if err != nil {
+
+	pkg := pushpackage.New(buf)
+	pkg.EncodeJSON("website.json", website)
+	pkg.File("icon.iconset/icon_128x128@2x.png", "../fixtures/gopher.png")
+	if err := pkg.Sign(cert, privateKey); err != nil {
 		t.Fatal(err)
 	}
 
@@ -68,7 +50,7 @@ func TestNew(t *testing.T) {
 				t.Errorf("Unexpected content for %s: %s", f.Name, b)
 			}
 		} else {
-			log.Println(f.Name)
+			t.Log(f.Name)
 		}
 	}
 }

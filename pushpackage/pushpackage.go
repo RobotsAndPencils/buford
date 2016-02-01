@@ -8,50 +8,94 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"io"
-	"path"
+	"os"
 
 	"github.com/st3fan/gocrypto/pkcs7"
 )
 
-// New push package.
-func New(w io.Writer, website *Website, iconset IconSet, cert *x509.Certificate, key *rsa.PrivateKey) error {
-	z := zip.NewWriter(w)
+// Package for website push package or wallet pass package.
+type Package struct {
+	z *zip.Writer
 
 	// manifest is a map of relative file paths to their SHA checksums
-	manifest := make(map[string]string, len(iconset)+1)
+	manifest map[string]string
 
-	b, err := json.Marshal(website)
+	err error
+}
+
+// New push package
+func New(w io.Writer) Package {
+	return Package{
+		z:        zip.NewWriter(w),
+		manifest: make(map[string]string),
+	}
+}
+
+// EncodeJSON to a push package.
+func (p *Package) EncodeJSON(name string, e interface{}) {
+	if p.err != nil {
+		return
+	}
+
+	b, err := json.Marshal(e)
 	if err != nil {
-		return err
+		p.err = err
+		return
 	}
 	r := bytes.NewReader(b)
 
-	zf, err := z.Create("website.json")
-	if err != nil {
-		return err
+	p.Copy(name, r)
+}
+
+// Copy reader to the push package.
+func (p *Package) Copy(name string, r io.Reader) {
+	if p.err != nil {
+		return
 	}
+
+	zf, err := p.z.Create(name)
+	if err != nil {
+		p.err = err
+		return
+	}
+
 	checksum, err := copyAndChecksum(zf, r)
-	manifest["website.json"] = checksum
-
-	for _, icon := range iconset {
-		// NOTE: only forward slashes are allowed in zip files
-		// (therefore using path rather than filepath)
-		name := path.Join(iconDirectory, icon.Name)
-
-		zf, err := z.Create(name)
-		if err != nil {
-			return err
-		}
-		checksum, err := copyAndChecksum(zf, icon.Reader)
-		manifest[name] = checksum
+	if err != nil {
+		p.err = err
+		return
 	}
 
-	manifestBytes, err := json.Marshal(manifest)
+	p.manifest[name] = checksum
+}
+
+// File writes a file to the push package.
+// NOTE: Name is a relative path. Only forward slashes are allowed.
+func (p *Package) File(name, src string) {
+	if p.err != nil {
+		return
+	}
+
+	f, err := os.Open(src)
+	if err != nil {
+		p.err = err
+		return
+	}
+	defer f.Close()
+	p.Copy(name, f)
+}
+
+// Sign the package and close.
+func (p *Package) Sign(cert *x509.Certificate, key *rsa.PrivateKey) error {
+	if p.err != nil {
+		return p.err
+	}
+
+	manifestBytes, err := json.Marshal(p.manifest)
 	if err != nil {
 		return err
 	}
 
-	zf, err = z.Create("manifest.json")
+	zf, err := p.z.Create("manifest.json")
 	if err != nil {
 		return err
 	}
@@ -59,7 +103,7 @@ func New(w io.Writer, website *Website, iconset IconSet, cert *x509.Certificate,
 
 	// sign manifest.json with PKCS #7
 	// and add signature to the zip file
-	zf, err = z.Create("signature")
+	zf, err = p.z.Create("signature")
 	if err != nil {
 		return err
 	}
@@ -69,5 +113,10 @@ func New(w io.Writer, website *Website, iconset IconSet, cert *x509.Certificate,
 	}
 	zf.Write(sig)
 
-	return z.Close()
+	return p.z.Close()
+}
+
+// Error that occurred while adding files to the push package.
+func (p *Package) Error() error {
+	return p.err
 }

@@ -9,8 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/RobotsAndPencils/buford/certificate"
@@ -78,43 +76,18 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/zip")
 
-	const iconPath = "../../fixtures/"
-
-	icon128x := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon128x.Close()
-	icon128 := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon128.Close()
-	icon32x := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon32x.Close()
-	icon32 := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon32.Close()
-	icon16x := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon16x.Close()
-	icon16 := MustOpen(filepath.Join(iconPath, "gopher.png"))
-	defer icon16.Close()
-
-	iconset := pushpackage.IconSet{
-		{Name: "icon_128x128@2x.png", Reader: icon128x},
-		{Name: "icon_128x128.png", Reader: icon128},
-		{Name: "icon_32x32@2x.png", Reader: icon32x},
-		{Name: "icon_32x32.png", Reader: icon32},
-		{Name: "icon_16x16@2x.png", Reader: icon16x},
-		{Name: "icon_16x16.png", Reader: icon16},
-	}
-
 	// create a push package and sign it with Cert/Key.
-	if err := pushpackage.New(w, &website, iconset, cert, privateKey); err != nil {
+	pkg := pushpackage.New(w)
+	pkg.EncodeJSON("website.json", website)
+	pkg.File("icon.iconset/icon_128x128@2x.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_128x128.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_32x32@2x.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_32x32.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_16x16@2x.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_16x16.png", "../../fixtures/gopher.png")
+	if err := pkg.Sign(cert, privateKey); err != nil {
 		log.Fatal(err)
 	}
-}
-
-// MustOpen a file or fail.
-func MustOpen(name string) *os.File {
-	f, err := os.Open(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return f
 }
 
 func registerDeviceHandler(w http.ResponseWriter, r *http.Request) {
