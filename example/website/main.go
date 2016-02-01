@@ -16,16 +16,17 @@ import (
 	"github.com/RobotsAndPencils/buford/payload"
 	"github.com/RobotsAndPencils/buford/push"
 	"github.com/RobotsAndPencils/buford/pushpackage"
+	"github.com/gorilla/mux"
 )
 
 var (
 	website = pushpackage.Website{
 		Name:                "Buford",
 		PushID:              "web.com.github.RobotsAndPencils.buford",
-		AllowedDomains:      []string{"https://e2f9f182.ngrok.io"},
-		URLFormatString:     `https://e2f9f182.ngrok.io/%@/?q=%@`,
+		AllowedDomains:      []string{"https://9aea51d1.ngrok.io"},
+		URLFormatString:     `https://9aea51d1.ngrok.io/%@?q=%@`,
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
-		WebServiceURL:       "https://e2f9f182.ngrok.io",
+		WebServiceURL:       "https://9aea51d1.ngrok.io",
 	}
 
 	templates = template.Must(template.ParseFiles("index.html", "request.html"))
@@ -56,6 +57,10 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("apns-id:", id)
 }
 
+func clickHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("clicked", r.URL.Query()["q"])
+}
+
 // MustOpen a file or fail.
 func MustOpen(name string) *os.File {
 	f, err := os.Open(name)
@@ -66,6 +71,9 @@ func MustOpen(name string) *os.File {
 }
 
 func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Println(vars["websitePushID"])
+
 	w.Header().Set("Content-Type", "application/zip")
 
 	const iconPath = "../../pushpackage/fixtures/"
@@ -97,6 +105,20 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func registerDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Printf("register device %s for %s", vars["deviceToken"], vars["websitePushID"])
+
+	DeviceToken = vars["deviceToken"]
+}
+
+func forgetDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Printf("forget device %s for %s", vars["deviceToken"], vars["websitePushID"])
+
+	DeviceToken = ""
+}
+
 func logHandler(w http.ResponseWriter, r *http.Request) {
 	var logs struct {
 		Logs []string `json:"logs"`
@@ -118,9 +140,8 @@ var (
 	Cert       *x509.Certificate
 	PrivateKey *rsa.PrivateKey
 
-	Service push.Service
-	// TODO: set this from endpoint for registering device
-	DeviceToken = "D23..."
+	Service     push.Service
+	DeviceToken string
 )
 
 func main() {
@@ -141,13 +162,16 @@ func main() {
 		Host:   push.Production,
 	}
 
-	// TODO: endpoints for registering/forgetting devices
-	// TODO: endpoint for clicks
+	r := mux.NewRouter()
+	r.HandleFunc("/", indexHandler).Methods("GET")
+	r.HandleFunc("/request", requestPermissionHandler)
+	r.HandleFunc("/push", pushHandler)
+	r.HandleFunc("/click", clickHandler).Methods("GET")
 
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/request", requestPermissionHandler)
-	http.HandleFunc("/push", pushHandler)
-	http.HandleFunc("/v1/pushPackages/"+website.PushID, pushPackagesHandler)
-	http.HandleFunc("/v1/log", logHandler)
-	http.ListenAndServe(":5000", nil)
+	r.HandleFunc("/v1/pushPackages/{websitePushID}", pushPackagesHandler).Methods("POST")
+	r.HandleFunc("/v1/devices/{deviceToken}/registrations/{websitePushID}", registerDeviceHandler).Methods("POST")
+	r.HandleFunc("/v1/devices/{deviceToken}/registrations/{websitePushID}", forgetDeviceHandler).Methods("DELETE")
+	r.HandleFunc("/v1/log", logHandler).Methods("POST")
+
+	http.ListenAndServe(":5000", r)
 }

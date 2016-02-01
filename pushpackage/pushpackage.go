@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"io"
-	"log"
 	"path"
 
 	"github.com/st3fan/gocrypto/pkcs7"
@@ -51,8 +50,6 @@ func New(w io.Writer, website *Website, iconset IconSet, cert *x509.Certificate,
 	if err != nil {
 		return err
 	}
-
-	log.Println(string(manifestBytes))
 
 	zf, err = z.Create("manifest.json")
 	if err != nil {
