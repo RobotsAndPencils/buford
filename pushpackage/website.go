@@ -1,6 +1,6 @@
 package pushpackage
 
-// Website JSON
+// Website JSON for creating a push package.
 type Website struct {
 	// Website Name shown in the Notification Center.
 	Name string `json:"websiteName"`

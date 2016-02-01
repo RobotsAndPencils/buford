@@ -12,7 +12,13 @@ Buford uses Apple's new HTTP/2 Notification API that was announced at WWDC 2015 
 
 [API documentation](https://godoc.org/github.com/RobotsAndPencils/buford/) is available from GoDoc.
 
-Also see Apple's [Local and Remote Notification Programming Guide](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html), especially the sections on the JSON [payload](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1) and the [Notification API](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1). Also see [Safari Push Notifications](https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12).
+Also see Apple's [Local and Remote Notification Programming Guide][notification], especially the sections on the JSON [payload][] and the [Notification API][notification-api]. Also see [Safari Push Notifications][safari] and the [Wallet Developer Guide][wallet].
+
+[notification]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html
+[payload] :https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1
+[notification-api]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1
+[safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
+[wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
 
 #### Terminology
 
@@ -34,7 +40,7 @@ Also see Apple's [Local and Remote Notification Programming Guide](https://devel
 
 ### Installation
 
-To use this library you can install [Go 1.6 beta 1 binaries](https://groups.google.com/forum/#!topic/golang-nuts/24zV9JeBoEE) or [install Go from source](https://golang.org/doc/install/source).
+To use this library you can install [Go 1.6 rc 1 binaries](https://golang.org/dl/) or [install Go from source](https://golang.org/doc/install/source).
 
 Other than the standard library, Buford depends on the pkcs12 package, which can be retrieved or updated with:
 
@@ -64,13 +70,13 @@ func main() {
 	password := ""
 	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
 
-	cert, err := certificate.Load(filename, password)
+	cert, key, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	service := push.Service{
-		Client: push.NewClient(cert),
+		Client: push.NewClient(certificate.TLS(cert, key)),
 		Host:   push.Development,
 	}
 

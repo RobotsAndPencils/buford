@@ -1,4 +1,4 @@
-// Package pushpackage creates push packages for website push notifications.
+// Package pushpackage creates website push packages and wallet pass packages.
 package pushpackage
 
 import (
@@ -23,7 +23,7 @@ type Package struct {
 	err error
 }
 
-// New push package
+// New push package will be written to w.
 func New(w io.Writer) Package {
 	return Package{
 		z:        zip.NewWriter(w),
@@ -31,7 +31,7 @@ func New(w io.Writer) Package {
 	}
 }
 
-// EncodeJSON to a push package.
+// EncodeJSON to the push package.
 func (p *Package) EncodeJSON(name string, e interface{}) {
 	if p.err != nil {
 		return
@@ -69,6 +69,7 @@ func (p *Package) Copy(name string, r io.Reader) {
 }
 
 // File writes a file to the push package.
+//
 // NOTE: Name is a relative path. Only forward slashes are allowed.
 func (p *Package) File(name, src string) {
 	if p.err != nil {
