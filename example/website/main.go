@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/payload"
@@ -21,10 +22,11 @@ import (
 
 var (
 	website = pushpackage.Website{
-		Name:                "Buford",
-		PushID:              "web.com.github.RobotsAndPencils.buford",
-		AllowedDomains:      []string{"https://9aea51d1.ngrok.io"},
-		URLFormatString:     `https://9aea51d1.ngrok.io/click?q=%@`,
+		Name:            "Buford",
+		PushID:          "web.com.github.RobotsAndPencils.buford",
+		AllowedDomains:  []string{"https://9aea51d1.ngrok.io"},
+		URLFormatString: `https://9aea51d1.ngrok.io/click?q=%@`,
+		// AuthenticationToken identifies the user (16+ characters)
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
 		WebServiceURL:       "https://9aea51d1.ngrok.io",
 	}
@@ -60,7 +62,8 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := service.Push(deviceToken, nil, p)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	log.Println("apns-id:", id)
 }
@@ -116,16 +119,25 @@ func MustOpen(name string) *os.File {
 
 func registerDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	log.Printf("register device %s for %s", vars["deviceToken"], vars["websitePushID"])
+	log.Printf("register device %s (user %s) for %s", vars["deviceToken"], getAuthenticationToken(r), vars["websitePushID"])
 
 	deviceToken = vars["deviceToken"]
 }
 
 func forgetDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	log.Printf("forget device %s for %s", vars["deviceToken"], vars["websitePushID"])
+	log.Printf("forget device %s (user %s) for %s", vars["deviceToken"], getAuthenticationToken(r), vars["websitePushID"])
 
 	deviceToken = ""
+}
+
+func getAuthenticationToken(r *http.Request) string {
+	h := r.Header.Get("Authorization")
+	list := strings.SplitN(h, " ", 2)
+	if len(list) != 2 || list[0] != "ApplePushNotifications" {
+		return ""
+	}
+	return list[1]
 }
 
 func logHandler(w http.ResponseWriter, r *http.Request) {
