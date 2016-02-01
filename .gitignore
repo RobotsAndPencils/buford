@@ -1,3 +1,4 @@
 *.p12
 *.pem
 c.out
+!fixtures/*

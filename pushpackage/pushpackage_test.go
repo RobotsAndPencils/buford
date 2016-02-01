@@ -23,7 +23,7 @@ func TestNew(t *testing.T) {
 		WebServiceURL:       "https://example.com/push",
 	}
 
-	r, err := os.Open("fixtures/gopher.png")
+	r, err := os.Open("../fixtures/gopher.png")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +36,7 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	p12, err := ioutil.ReadFile("../cert-website.p12")
+	p12, err := ioutil.ReadFile("../fixtures/cert.p12")
 	if err != nil {
 		log.Fatal(err)
 	}

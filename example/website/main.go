@@ -78,7 +78,7 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/zip")
 
-	const iconPath = "../../pushpackage/fixtures/"
+	const iconPath = "../../fixtures/"
 
 	icon128x := MustOpen(filepath.Join(iconPath, "gopher.png"))
 	defer icon128x.Close()
@@ -180,6 +180,7 @@ func main() {
 	r.HandleFunc("/push", pushHandler)
 	r.HandleFunc("/click", clickHandler).Methods("GET")
 
+	// WebServiceURL endpoints
 	r.HandleFunc("/v1/pushPackages/{websitePushID}", pushPackagesHandler).Methods("POST")
 	r.HandleFunc("/v1/devices/{deviceToken}/registrations/{websitePushID}", registerDeviceHandler).Methods("POST")
 	r.HandleFunc("/v1/devices/{deviceToken}/registrations/{websitePushID}", forgetDeviceHandler).Methods("DELETE")
