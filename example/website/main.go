@@ -24,16 +24,24 @@ var (
 		Name:                "Buford",
 		PushID:              "web.com.github.RobotsAndPencils.buford",
 		AllowedDomains:      []string{"https://9aea51d1.ngrok.io"},
-		URLFormatString:     `https://9aea51d1.ngrok.io/%@?q=%@`,
+		URLFormatString:     `https://9aea51d1.ngrok.io/click?q=%@`,
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
 		WebServiceURL:       "https://9aea51d1.ngrok.io",
 	}
+
+	// Cert and private key for signing push packages.
+	cert       *x509.Certificate
+	privateKey *rsa.PrivateKey
+
+	// Service and device token to send push notifications.
+	service     push.Service
+	deviceToken string
 
 	templates = template.Must(template.ParseFiles("index.html", "request.html"))
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "index.html", website)
+	templates.ExecuteTemplate(w, "index.html", nil)
 }
 
 func requestPermissionHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,10 +55,10 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 			Body:  "Hello HTTP/2",
 		},
 		// URLArgs must match placeholders in URLFormatString
-		URLArgs: []string{"click", "hello"},
+		URLArgs: []string{"hello"},
 	}
 
-	id, err := Service.Push(DeviceToken, nil, p)
+	id, err := service.Push(deviceToken, nil, p)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,18 +69,9 @@ func clickHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("clicked", r.URL.Query()["q"])
 }
 
-// MustOpen a file or fail.
-func MustOpen(name string) *os.File {
-	f, err := os.Open(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return f
-}
-
 func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	log.Println(vars["websitePushID"])
+	log.Println("building push package for", vars["websitePushID"])
 
 	w.Header().Set("Content-Type", "application/zip")
 
@@ -100,23 +99,33 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 		{Name: "icon_16x16.png", Reader: icon16},
 	}
 
-	if err := pushpackage.New(w, &website, iconset, Cert, PrivateKey); err != nil {
+	// create a push package and sign it with Cert/Key.
+	if err := pushpackage.New(w, &website, iconset, cert, privateKey); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// MustOpen a file or fail.
+func MustOpen(name string) *os.File {
+	f, err := os.Open(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return f
 }
 
 func registerDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	log.Printf("register device %s for %s", vars["deviceToken"], vars["websitePushID"])
 
-	DeviceToken = vars["deviceToken"]
+	deviceToken = vars["deviceToken"]
 }
 
 func forgetDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	log.Printf("forget device %s for %s", vars["deviceToken"], vars["websitePushID"])
 
-	DeviceToken = ""
+	deviceToken = ""
 }
 
 func logHandler(w http.ResponseWriter, r *http.Request) {
@@ -135,15 +144,6 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Cert and private key for signing push packages.
-var (
-	Cert       *x509.Certificate
-	PrivateKey *rsa.PrivateKey
-
-	Service     push.Service
-	DeviceToken string
-)
-
 func main() {
 	var filename, password string
 
@@ -152,13 +152,13 @@ func main() {
 	flag.Parse()
 
 	var err error
-	Cert, PrivateKey, err = certificate.Load(filename, password)
+	cert, privateKey, err = certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Service = push.Service{
-		Client: push.NewClient(certificate.TLS(Cert, PrivateKey)),
+	service = push.Service{
+		Client: push.NewClient(certificate.TLS(cert, privateKey)),
 		Host:   push.Production,
 	}
 
