@@ -2,9 +2,11 @@
 
 How to use this example in development.
 
-1. Create a Website Push ID in [Apple's Member Center](https://developer.apple.com/membercenter/index.action).
+1. Create a Website Push ID in [Apple's Member Center](https://developer.apple.com/membercenter/index.action). This requires a CSR from your keychain.
 
-2. Download the certificate from Apple's website.
+2. Download the certificate from Apple's website and add it to your Keychain.
+
+3. Export a `.p12` with the certificate and the private key you generated during step 1.
 
 4. Update main.go with the PushID you used in step 1.
 
