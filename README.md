@@ -2,7 +2,7 @@
 
 Apple Push Notification (APN) Provider for Go 1.6 and HTTP/2.
 
-This release is a nearly feature complete. Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
+Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
 
 [![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford) [![Build Status](https://travis-ci.org/RobotsAndPencils/buford.svg?branch=ci)](https://travis-ci.org/RobotsAndPencils/buford)
 
@@ -46,7 +46,7 @@ Other than the standard library, Buford depends on the pkcs12 package, which can
 go get -u golang.org/x/crypto/pkcs12
 ```
 
-The API is not yet stable. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
+I am still looking for feedback on the API so it may change. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
 
 ### Examples
 
@@ -83,7 +83,7 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	id, err = service.Push(deviceToken, nil, p)
+	id, err := service.Push(deviceToken, nil, p)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,10 +100,10 @@ headers := &push.Headers{
 	LowPriority: true,
 }
 
-id, err = service.Push(deviceToken, headers, p)
+id, err := service.Push(deviceToken, headers, p)
 ```
 
-If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should be used when sending a ContentAvailable payload.
+If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should always be set when sending a ContentAvailable payload.
 
 #### Custom values
 
@@ -116,7 +116,7 @@ p := payload.APS{
 pm := p.Map()
 pm["acme2"] = []string{"bang", "whiz"}
 
-id, err = service.Push(deviceToken, nil, pm)
+id, err := service.Push(deviceToken, nil, pm)
 ```
 
 The Push method will use json.Marshal to serialize whatever you send it.
@@ -134,7 +134,7 @@ if err != nil {
 id, err := service.PushBytes(deviceToken, nil, b)
 ```
 
-Whether you use Push or PushBytes the underlying HTTP/2 connection to APNS will be reused.
+Whether you use Push or PushBytes, the underlying HTTP/2 connection to APNS will be reused.
 
 ### Website Push
 
@@ -154,7 +154,7 @@ if err := pkg.Sign(cert, privateKey, nil); err != nil {
 
 NOTE: The filenames added to the zip may contain forward slashes but not back slashes or drive letters.
 
-See the `examples/website/` and the [Safari Push Notifications][safari] documentation.
+See `example/website/` and the [Safari Push Notifications][safari] documentation.
 
 [safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
 
@@ -162,6 +162,6 @@ See the `examples/website/` and the [Safari Push Notifications][safari] document
 
 A pass is a signed zip file with a .pkpass extension and a `application/vnd.apple.pkpass` MIME type. You can use `pushpackage` to write a .pkpass that contains a `pass.json` file.
 
-See the `examples/wallet/` and the [Wallet Developer Guide][wallet].
+See `example/wallet/` and the [Wallet Developer Guide][wallet].
 
 [wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
