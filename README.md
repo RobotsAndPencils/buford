@@ -147,7 +147,7 @@ pkg := pushpackage.New(w)
 pkg.EncodeJSON("website.json", website)
 pkg.File("icon.iconset/icon_128x128@2x.png", "static/icon_128x128@2x.png")
 // other icons... (required)
-if err := pkg.Sign(cert, privateKey); err != nil {
+if err := pkg.Sign(cert, privateKey, nil); err != nil {
 	log.Fatal(err)
 }
 ```
