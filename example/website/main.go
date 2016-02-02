@@ -85,7 +85,7 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	pkg.File("icon.iconset/icon_32x32.png", "../../fixtures/gopher.png")
 	pkg.File("icon.iconset/icon_16x16@2x.png", "../../fixtures/gopher.png")
 	pkg.File("icon.iconset/icon_16x16.png", "../../fixtures/gopher.png")
-	if err := pkg.Sign(cert, privateKey); err != nil {
+	if err := pkg.Sign(cert, privateKey, nil); err != nil {
 		log.Fatal(err)
 	}
 }

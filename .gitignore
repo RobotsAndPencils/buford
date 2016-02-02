@@ -1,4 +1,6 @@
 *.p12
 *.pem
 c.out
+*.pass
+*.pkpass
 !fixtures/*
