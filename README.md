@@ -15,7 +15,7 @@ Buford uses Apple's new HTTP/2 Notification API that was announced at WWDC 2015 
 Also see Apple's [Local and Remote Notification Programming Guide][notification], especially the sections on the JSON [payload][] and the [Notification API][notification-api]. Also see [Safari Push Notifications][safari] and the [Wallet Developer Guide][wallet].
 
 [notification]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html
-[payload] :https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1
+[payload]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1
 [notification-api]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1
 [safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
 [wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
@@ -137,3 +137,29 @@ id, err := service.PushBytes(deviceToken, nil, b)
 ```
 
 Whether you use Push or PushBytes the underlying HTTP/2 connection to APNS will be reused.
+
+### Website Push
+
+Before you can send push notifications through Safari and the Notification Center, you must provide a push package, which is a signed zip file containing some JSON and icons.
+
+Use `pushpackage` to write a zip to a `http.ResponseWriter` or to a file. It will create the `manifest.json` and `signature` files for you.
+
+```go
+pkg := pushpackage.New(w)
+pkg.EncodeJSON("website.json", website)
+pkg.File("icon.iconset/icon_128x128@2x.png", "static/icon_128x128@2x.png")
+// other icons... (required)
+if err := pkg.Sign(cert, privateKey); err != nil {
+	log.Fatal(err)
+}
+```
+
+NOTE: The filenames added to the zip may contain forward slashes but not back slashes or drive letters.
+
+See the `examples/` folder for more.
+
+### Wallet (Passbook) Pass
+
+A pass is a signed zip file with a .pkpass extension and a `application/vnd.apple.pkpass` MIME type. You can use `pushpackage` to write a .pkpass that contains a `pass.json` file.
+
+TODO: Test this out.
