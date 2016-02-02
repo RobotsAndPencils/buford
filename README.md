@@ -12,13 +12,11 @@ Buford uses Apple's new HTTP/2 Notification API that was announced at WWDC 2015 
 
 [API documentation](https://godoc.org/github.com/RobotsAndPencils/buford/) is available from GoDoc.
 
-Also see Apple's [Local and Remote Notification Programming Guide][notification], especially the sections on the JSON [payload][] and the [Notification API][notification-api]. Also see [Safari Push Notifications][safari] and the [Wallet Developer Guide][wallet].
+Also see Apple's [Local and Remote Notification Programming Guide][notification], especially the sections on the JSON [payload][] and the [Notification API][notification-api].
 
 [notification]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html
 [payload]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1
 [notification-api]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1
-[safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
-[wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
 
 #### Terminology
 
@@ -156,10 +154,14 @@ if err := pkg.Sign(cert, privateKey); err != nil {
 
 NOTE: The filenames added to the zip may contain forward slashes but not back slashes or drive letters.
 
-See the `examples/` folder for more.
+See the `examples/website/` and the [Safari Push Notifications][safari] documentation.
+
+[safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
 
 ### Wallet (Passbook) Pass
 
 A pass is a signed zip file with a .pkpass extension and a `application/vnd.apple.pkpass` MIME type. You can use `pushpackage` to write a .pkpass that contains a `pass.json` file.
 
-TODO: Test this out.
+See the `examples/wallet/` and the [Wallet Developer Guide][wallet].
+
+[wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
