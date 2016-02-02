@@ -7,7 +7,6 @@ import (
 )
 
 func TestValidCert(t *testing.T) {
-	// TODO: figure out how to test certificate loading and validation in CI
 	const name = "../fixtures/cert.p12"
 
 	_, _, err := certificate.Load(name, "")
