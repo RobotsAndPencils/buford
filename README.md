@@ -40,10 +40,11 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 To use this library you can install [Go 1.6 rc 1 binaries](https://golang.org/dl/) or [install Go from source](https://golang.org/doc/install/source).
 
-Other than the standard library, Buford depends on the pkcs12 package, which can be retrieved or updated with:
+Other than the standard library, Buford's certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
 ```
 go get -u golang.org/x/crypto/pkcs12
+go get -u github.com/aai/gocrypto/pkcs7
 ```
 
 I am still looking for feedback on the API so it may change. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
