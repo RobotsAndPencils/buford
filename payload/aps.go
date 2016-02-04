@@ -78,6 +78,9 @@ func (a *APS) Map() map[string]interface{} {
 	if a.ContentAvailable {
 		aps["content-available"] = 1
 	}
+	if a.Category != "" {
+		aps["category"] = a.Category
+	}
 
 	// wrap in "aps" to form final payload
 	return map[string]interface{}{"aps": aps}
