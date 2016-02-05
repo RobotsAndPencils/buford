@@ -3,6 +3,7 @@
 package certificate
 
 import (
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -18,31 +19,40 @@ var (
 )
 
 // Load a .p12 certificate from disk.
-func Load(filename, password string) (tls.Certificate, error) {
+func Load(filename, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	p12, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("Unable to load %s: %v", filename, err)
+		return nil, nil, fmt.Errorf("Unable to load %s: %v", filename, err)
 	}
 	return Decode(p12, password)
 }
 
 // Decode and verify an in memory .p12 certificate (DER binary format).
-func Decode(p12 []byte, password string) (tls.Certificate, error) {
+func Decode(p12 []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	// decode an x509.Certificate to verify
 	privateKey, cert, err := pkcs12.Decode(p12, password)
 	if err != nil {
-		return tls.Certificate{}, err
+		return nil, nil, err
 	}
 	if err := verify(cert); err != nil {
-		return tls.Certificate{}, err
+		return nil, nil, err
 	}
 
-	// wrap in a tls certificate
+	// assert that private key is RSA
+	priv, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, nil, errors.New("expected RSA private key type")
+	}
+	return cert, priv, nil
+}
+
+// TLS wraps an x509 certificate as a tls.Certificate.
+func TLS(cert *x509.Certificate, privateKey *rsa.PrivateKey) tls.Certificate {
 	return tls.Certificate{
 		Certificate: [][]byte{cert.Raw},
 		PrivateKey:  privateKey,
 		Leaf:        cert,
-	}, nil
+	}
 }
 
 // verify checks if a certificate has expired

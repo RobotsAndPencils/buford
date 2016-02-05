@@ -2,7 +2,7 @@
 
 Apple Push Notification (APN) Provider for Go 1.6 and HTTP/2.
 
-This release is a nearly feature complete. Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
+Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
 
 [![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford) [![Build Status](https://travis-ci.org/RobotsAndPencils/buford.svg?branch=ci)](https://travis-ci.org/RobotsAndPencils/buford)
 
@@ -12,7 +12,11 @@ Buford uses Apple's new HTTP/2 Notification API that was announced at WWDC 2015 
 
 [API documentation](https://godoc.org/github.com/RobotsAndPencils/buford/) is available from GoDoc.
 
-Also see Apple's [Local and Remote Notification Programming Guide](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html), especially the sections on the JSON [payload](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1) and the [Notification API](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1). Also see [Safari Push Notifications](https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12).
+Also see Apple's [Local and Remote Notification Programming Guide][notification], especially the sections on the JSON [payload][] and the [Notification API][notification-api].
+
+[notification]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/Introduction.html
+[payload]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1
+[notification-api]: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW1
 
 #### Terminology
 
@@ -34,15 +38,16 @@ Also see Apple's [Local and Remote Notification Programming Guide](https://devel
 
 ### Installation
 
-To use this library you can install [Go 1.6 beta 1 binaries](https://groups.google.com/forum/#!topic/golang-nuts/24zV9JeBoEE) or [install Go from source](https://golang.org/doc/install/source).
+To use this library you can install [Go 1.6 rc 1 binaries](https://golang.org/dl/) or [install Go from source](https://golang.org/doc/install/source).
 
-Other than the standard library, Buford depends on the pkcs12 package, which can be retrieved or updated with:
+Other than the standard library, Buford's certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
 ```
 go get -u golang.org/x/crypto/pkcs12
+go get -u github.com/aai/gocrypto/pkcs7
 ```
 
-The API is not yet stable. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
+I am still looking for feedback on the API so it may change. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
 
 ### Examples
 
@@ -64,13 +69,13 @@ func main() {
 	password := ""
 	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
 
-	cert, err := certificate.Load(filename, password)
+	cert, key, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	service := push.Service{
-		Client: push.NewClient(cert),
+		Client: push.NewClient(certificate.TLS(cert, key)),
 		Host:   push.Development,
 	}
 
@@ -79,7 +84,7 @@ func main() {
 		Badge: badge.New(42),
 	}
 
-	id, err = service.Push(deviceToken, nil, p)
+	id, err := service.Push(deviceToken, nil, p)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,10 +101,10 @@ headers := &push.Headers{
 	LowPriority: true,
 }
 
-id, err = service.Push(deviceToken, headers, p)
+id, err := service.Push(deviceToken, headers, p)
 ```
 
-If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should be used when sending a ContentAvailable payload.
+If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should always be set when sending a ContentAvailable payload.
 
 #### Custom values
 
@@ -112,7 +117,7 @@ p := payload.APS{
 pm := p.Map()
 pm["acme2"] = []string{"bang", "whiz"}
 
-id, err = service.Push(deviceToken, nil, pm)
+id, err := service.Push(deviceToken, nil, pm)
 ```
 
 The Push method will use json.Marshal to serialize whatever you send it.
@@ -130,4 +135,34 @@ if err != nil {
 id, err := service.PushBytes(deviceToken, nil, b)
 ```
 
-Whether you use Push or PushBytes the underlying HTTP/2 connection to APNS will be reused.
+Whether you use Push or PushBytes, the underlying HTTP/2 connection to APNS will be reused.
+
+### Website Push
+
+Before you can send push notifications through Safari and the Notification Center, you must provide a push package, which is a signed zip file containing some JSON and icons.
+
+Use `pushpackage` to write a zip to a `http.ResponseWriter` or to a file. It will create the `manifest.json` and `signature` files for you.
+
+```go
+pkg := pushpackage.New(w)
+pkg.EncodeJSON("website.json", website)
+pkg.File("icon.iconset/icon_128x128@2x.png", "static/icon_128x128@2x.png")
+// other icons... (required)
+if err := pkg.Sign(cert, privateKey, nil); err != nil {
+	log.Fatal(err)
+}
+```
+
+NOTE: The filenames added to the zip may contain forward slashes but not back slashes or drive letters.
+
+See `example/website/` and the [Safari Push Notifications][safari] documentation.
+
+[safari]: https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/NotificationProgrammingGuideForWebsites/PushNotifications/PushNotifications.html#//apple_ref/doc/uid/TP40013225-CH3-SW12
+
+### Wallet (Passbook) Pass
+
+A pass is a signed zip file with a .pkpass extension and a `application/vnd.apple.pkpass` MIME type. You can use `pushpackage` to write a .pkpass that contains a `pass.json` file.
+
+See `example/wallet/` and the [Wallet Developer Guide][wallet].
+
+[wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
