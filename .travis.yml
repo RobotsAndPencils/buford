@@ -2,7 +2,7 @@ sudo: false
 language: go
 
 go:
-   - 1.6rc1
+   - 1.6
 
 before_script:
   - go get -u github.com/golang/lint/golint

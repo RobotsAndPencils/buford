@@ -38,7 +38,7 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 ### Installation
 
-To use this library you can install [Go 1.6 rc2 binaries](https://golang.org/dl/) or [install Go from source](https://golang.org/doc/install/source).
+This library requires [Go 1.6](https://golang.org/dl/) or better.
 
 Other than the standard library, Buford's certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
