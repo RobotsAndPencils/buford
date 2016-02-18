@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 		WebServiceURL:       "https://example.com/push",
 	}
 
-	cert, privateKey, err := certificate.Load("../fixtures/cert.p12", "")
+	cert, privateKey, err := certificate.Load("../testdata/cert.p12", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestNew(t *testing.T) {
 
 	pkg := pushpackage.New(buf)
 	pkg.EncodeJSON("website.json", website)
-	pkg.File("icon.iconset/icon_128x128@2x.png", "../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_128x128@2x.png", "../testdata/gopher.png")
 	if err := pkg.Sign(cert, privateKey, nil); err != nil {
 		t.Fatal(err)
 	}

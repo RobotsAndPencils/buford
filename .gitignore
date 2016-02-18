@@ -4,4 +4,4 @@
 c.out
 *.pass
 *.pkpass
-!fixtures/*
+!testdata/*

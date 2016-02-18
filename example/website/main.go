@@ -79,12 +79,12 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	// create a push package and sign it with Cert/Key.
 	pkg := pushpackage.New(w)
 	pkg.EncodeJSON("website.json", website)
-	pkg.File("icon.iconset/icon_128x128@2x.png", "../../fixtures/gopher.png")
-	pkg.File("icon.iconset/icon_128x128.png", "../../fixtures/gopher.png")
-	pkg.File("icon.iconset/icon_32x32@2x.png", "../../fixtures/gopher.png")
-	pkg.File("icon.iconset/icon_32x32.png", "../../fixtures/gopher.png")
-	pkg.File("icon.iconset/icon_16x16@2x.png", "../../fixtures/gopher.png")
-	pkg.File("icon.iconset/icon_16x16.png", "../../fixtures/gopher.png")
+	pkg.File("icon.iconset/icon_128x128@2x.png", "../../testdata/gopher.png")
+	pkg.File("icon.iconset/icon_128x128.png", "../../testdata/gopher.png")
+	pkg.File("icon.iconset/icon_32x32@2x.png", "../../testdata/gopher.png")
+	pkg.File("icon.iconset/icon_32x32.png", "../../testdata/gopher.png")
+	pkg.File("icon.iconset/icon_16x16@2x.png", "../../testdata/gopher.png")
+	pkg.File("icon.iconset/icon_16x16.png", "../../testdata/gopher.png")
 	if err := pkg.Sign(cert, privateKey, nil); err != nil {
 		log.Fatal(err)
 	}
