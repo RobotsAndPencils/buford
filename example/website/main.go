@@ -142,8 +142,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	client, err := push.NewClient(certificate.TLS(cert, privateKey))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	service = push.Service{
-		Client: push.NewClient(certificate.TLS(cert, privateKey)),
+		Client: client,
 		Host:   push.Production,
 	}
 

@@ -24,8 +24,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	client, err := push.NewClient(certificate.TLS(cert, key))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	service := push.Service{
-		Client: push.NewClient(certificate.TLS(cert, key)),
+		Client: client,
 		Host:   push.Development,
 	}
 	if environment == "production" {

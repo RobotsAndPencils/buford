@@ -40,14 +40,15 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 This library requires [Go 1.6](https://golang.org/dl/) or better.
 
-Other than the standard library, Buford's certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
+Buford depends on several packages outside of the standard library, including the http2 package. Its certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
 ```
+go get -u golang.org/x/net/http2
 go get -u golang.org/x/crypto/pkcs12
 go get -u github.com/aai/gocrypto/pkcs7
 ```
 
-I am still looking for feedback on the API so it may change. Please use a tool like [Godep](https://github.com/tools/godep) to vendor Buford and its dependencies in your project.
+I am still looking for feedback on the API so it may change. Please copy Buford and its dependencies into a `vendor/` folder at the root of your project.
 
 ### Examples
 
@@ -74,8 +75,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	client, err := push.NewClient(certificate.TLS(cert, key))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	service := push.Service{
-		Client: push.NewClient(certificate.TLS(cert, key)),
+		Client: client,
 		Host:   push.Development,
 	}
 
