@@ -7,7 +7,7 @@ import (
 )
 
 func TestValidCert(t *testing.T) {
-	const name = "../fixtures/cert.p12"
+	const name = "../testdata/cert.p12"
 
 	_, _, err := certificate.Load(name, "")
 	if err != nil {
