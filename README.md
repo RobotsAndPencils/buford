@@ -34,7 +34,7 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 **Payload** The JSON sent to a device.
 
-**Headers** HTTP/2 headers are used to for priority and expiration.
+**Headers** HTTP/2 headers are used to set priority and expiration.
 
 ### Installation
 
