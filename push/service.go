@@ -205,7 +205,8 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	// error struct with a timestamp
 	return "", &Error{
 		Err:         e,
-		Timestamp:   time.Unix(response.Timestamp, 0),
+		// the response.Timestamp is Millisecond,but time.Unix() require seconds
+		Timestamp:   time.Unix(response.Timestamp/1000, 0),
 		DeviceToken: deviceToken,
 	}
 }
