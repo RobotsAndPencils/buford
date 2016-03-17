@@ -83,7 +83,7 @@ func TestTimestampError(t *testing.T) {
 
 	handler.HandleFunc("/3/device/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusGone)
-		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800}`))
+		w.Write([]byte(`{"reason":"Unregistered","timestamp":1262278080000}`))
 	})
 
 	service := push.Service{
@@ -105,8 +105,8 @@ func TestTimestampError(t *testing.T) {
 	if e.Err != push.ErrUnregistered {
 		t.Errorf("Expected error %v, got %v.", push.ErrUnregistered, err)
 	}
-
-	expected := time.Unix(12622780800, 0)
+	// fix the unixtime
+	expected := time.Unix(1262278080, 0)
 	if e.Timestamp != expected {
 		t.Errorf("Expected timestamp %v, got %v.", expected, e.Timestamp)
 	}
