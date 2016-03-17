@@ -83,7 +83,7 @@ func TestTimestampError(t *testing.T) {
 
 	handler.HandleFunc("/3/device/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusGone)
-		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800}`))
+		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800000}`))
 	})
 
 	service := push.Service{
