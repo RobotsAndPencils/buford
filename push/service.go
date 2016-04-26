@@ -26,7 +26,7 @@ type Service struct {
 
 // Headers sent with a push to control the notification (optional)
 type Headers struct {
-	// ID for the notification. Apple generates one if ommitted.
+	// ID for the notification. Apple generates one if omitted.
 	// This should be a UUID with 32 lowercase hexadecimal digits.
 	// TODO: use a UUID type.
 	ID string
@@ -73,7 +73,7 @@ var (
 	ErrUnregistered           = errors.New("device token is inactive for the specified topic")
 	ErrDeviceTokenNotForTopic = errors.New("device token does not match the specified topic")
 
-	// These errros should never happen when using Push.
+	// These errors should never happen when using Push.
 
 	ErrDuplicateHeaders = errors.New("one or more headers were repeated")
 	ErrBadPath          = errors.New("the request contained a bad :path")
@@ -215,7 +215,7 @@ func (h *Headers) set(reqHeader http.Header) {
 
 	if h.ID != "" {
 		reqHeader.Set("apns-id", h.ID)
-	} // when ommitted, Apple will generate a UUID for you
+	} // when omitted, Apple will generate a UUID for you
 
 	if !h.Expiration.IsZero() {
 		reqHeader.Set("apns-expiration", strconv.FormatInt(h.Expiration.Unix(), 10))
@@ -223,7 +223,7 @@ func (h *Headers) set(reqHeader http.Header) {
 
 	if h.LowPriority {
 		reqHeader.Set("apns-priority", "5")
-	} // when ommitted, the default priority is 10
+	} // when omitted, the default priority is 10
 
 	if h.Topic != "" {
 		reqHeader.Set("apns-topic", h.Topic)

@@ -8,7 +8,7 @@ type Website struct {
 	// Website Push ID (eg. web.com.domain)
 	PushID string `json:"websitePushID"`
 
-	// Wesites that can request permission from the user.
+	// Websites that can request permission from the user.
 	AllowedDomains []string `json:"allowedDomains"`
 
 	// http(s) URL for clicked notifications with %@ placeholders.
