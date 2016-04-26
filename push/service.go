@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -178,15 +177,11 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 		return resp.Header.Get("apns-id"), nil
 	}
 
-	// read entire response body
-	// TODO: could decode while reading instead
-	body, err := ioutil.ReadAll(resp.Body)
+	var response response
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return "", err
 	}
-
-	var response response
-	json.Unmarshal(body, &response)
 
 	e, ok := errorReason[response.Reason]
 	if !ok {
