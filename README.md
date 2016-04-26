@@ -38,7 +38,7 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 ### Installation
 
-This library requires [Go 1.6](https://golang.org/dl/) or better.
+This library requires [Go 1.6.2](https://golang.org/dl/) or better.
 
 Buford depends on several packages outside of the standard library, including the http2 package. Its certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
