@@ -7,13 +7,13 @@ import (
 )
 
 func TestMDM(t *testing.T) {
-	p := payload.MDM{"00000000-1111-3333-4444-555555555555"}
+	p := payload.MDM{Token: "00000000-1111-3333-4444-555555555555"}
 	expected := []byte(`{"mdm":"00000000-1111-3333-4444-555555555555"}`)
 	testPayload(t, p, expected)
 }
 
 func TestValidMDM(t *testing.T) {
-	p := payload.MDM{"00000000-1111-3333-4444-555555555555"}
+	p := payload.MDM{Token: "00000000-1111-3333-4444-555555555555"}
 	if err := p.Validate(); err != nil {
 		t.Errorf("Expected no error, got %v.", err)
 	}
