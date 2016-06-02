@@ -172,3 +172,13 @@ A pass is a signed zip file with a .pkpass extension and a `application/vnd.appl
 See `example/wallet/` and the [Wallet Developer Guide][wallet].
 
 [wallet]: https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/PassKit_PG/index.html
+
+### Related Projects
+
+* [apns2](https://github.com/sideshow/apns2) (Go)
+* [go-apns-server](https://github.com/CleverTap/go-apns-server) (Go mock server)
+* [Push Encryption](https://github.com/GoogleChrome/push-encryption-go) (Go Web Push for Chrome and Firefox)
+* [Lowdown](https://github.com/alloy/lowdown) (Ruby)
+* [Apnotic](https://github.com/ostinelli/apnotic) (Ruby)
+* [Pigeon](https://github.com/codedge-llc/pigeon) (Elixir, iOS and Android)
+
