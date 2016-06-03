@@ -94,13 +94,13 @@ var (
 
 // Error with a timestamp
 type Error struct {
-	Err         error
-	Timestamp   time.Time
-	DeviceToken string
+	Err       error
+	Status    int // http StatusCode
+	Timestamp time.Time
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("%v (device token %v last invalid at %v)", e.Err.Error(), e.DeviceToken, e.Timestamp)
+	return e.Err.Error()
 }
 
 var errorReason = map[string]error{
@@ -192,18 +192,17 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 		}
 	}
 
-	// error constant if there was no timestamp
-	if response.Timestamp == 0 {
-		return "", e
+	es := &Error{
+		Err:    e,
+		Status: resp.StatusCode,
 	}
 
-	// error struct with a timestamp
-	return "", &Error{
-		Err: e,
+	if response.Timestamp != 0 {
 		// the response.Timestamp is Milliseconds, but time.Unix() requires seconds
-		Timestamp:   time.Unix(response.Timestamp/1000, 0),
-		DeviceToken: deviceToken,
+		es.Timestamp = time.Unix(response.Timestamp/1000, 0)
 	}
+
+	return "", es
 }
 
 // set headers for an HTTP request

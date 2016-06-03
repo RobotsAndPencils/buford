@@ -69,8 +69,22 @@ func TestBadPriorityPush(t *testing.T) {
 	}
 
 	_, err := service.PushBytes(deviceToken, nil, payload)
-	if err != push.ErrBadPriority {
+
+	e, ok := err.(*push.Error)
+	if !ok {
+		t.Fatalf("Expected push error, got %v.", err)
+	}
+
+	if e.Err != push.ErrBadPriority {
 		t.Errorf("Expected error %v, got %v.", push.ErrBadPriority, err)
+	}
+
+	if e.Status != http.StatusBadRequest {
+		t.Errorf("Expected status %v, got %v.", http.StatusBadRequest, e.Status)
+	}
+
+	if !e.Timestamp.IsZero() {
+		t.Errorf("Expected zero timestamp, got %v.", e.Timestamp)
 	}
 }
 
@@ -93,10 +107,6 @@ func TestTimestampError(t *testing.T) {
 
 	_, err := service.PushBytes(deviceToken, nil, payload)
 
-	if err == push.ErrUnregistered {
-		t.Error("Expected error structure, got constant.")
-	}
-
 	e, ok := err.(*push.Error)
 	if !ok {
 		t.Fatalf("Expected push error, got %v.", err)
@@ -106,12 +116,12 @@ func TestTimestampError(t *testing.T) {
 		t.Errorf("Expected error %v, got %v.", push.ErrUnregistered, err)
 	}
 
+	if e.Status != http.StatusGone {
+		t.Errorf("Expected status %v, got %v.", http.StatusGone, e.Status)
+	}
+
 	expected := time.Unix(12622780800, 0)
 	if e.Timestamp != expected {
 		t.Errorf("Expected timestamp %v, got %v.", expected, e.Timestamp)
-	}
-
-	if e.DeviceToken != deviceToken {
-		t.Errorf("Expected device token %v, got %v.", deviceToken, e.DeviceToken)
 	}
 }
