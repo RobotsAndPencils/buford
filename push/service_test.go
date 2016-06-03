@@ -75,8 +75,13 @@ func TestBadPriorityPush(t *testing.T) {
 		t.Fatalf("Expected push error, got %v.", err)
 	}
 
-	if e.Err != push.ErrBadPriority {
+	if e.Reason != push.ErrBadPriority {
 		t.Errorf("Expected error %v, got %v.", push.ErrBadPriority, err)
+	}
+
+	const expectedMessage = "the apns-priority value is bad"
+	if e.Error() != expectedMessage {
+		t.Errorf("Expected error message %q, got %q.", expectedMessage, e.Error())
 	}
 
 	if e.Status != http.StatusBadRequest {
@@ -112,15 +117,20 @@ func TestTimestampError(t *testing.T) {
 		t.Fatalf("Expected push error, got %v.", err)
 	}
 
-	if e.Err != push.ErrUnregistered {
-		t.Errorf("Expected error %v, got %v.", push.ErrUnregistered, err)
+	if e.Reason != push.ErrUnregistered {
+		t.Errorf("Expected error reason %v, got %v.", push.ErrUnregistered, err)
+	}
+
+	const expectedMessage = "device token is inactive for the specified topic (last invalid at 2370-01-01 00:00:00 +0000 UTC)"
+	if e.Error() != expectedMessage {
+		t.Errorf("Expected error message %q, got %q.", expectedMessage, e.Error())
 	}
 
 	if e.Status != http.StatusGone {
 		t.Errorf("Expected status %v, got %v.", http.StatusGone, e.Status)
 	}
 
-	expected := time.Unix(12622780800, 0)
+	expected := time.Unix(12622780800, 0).UTC()
 	if e.Timestamp != expected {
 		t.Errorf("Expected timestamp %v, got %v.", expected, e.Timestamp)
 	}
