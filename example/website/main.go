@@ -34,7 +34,7 @@ var (
 	privateKey *rsa.PrivateKey
 
 	// Service and device token to send push notifications.
-	service     push.Service
+	service     *push.Service
 	deviceToken string
 
 	templates = template.Must(template.ParseFiles("index.html", "request.html"))
@@ -142,14 +142,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client, err := push.NewClient(certificate.TLS(cert, privateKey))
+	service, err = push.NewService(push.Production, certificate.TLS(cert, privateKey))
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	service = push.Service{
-		Client: client,
-		Host:   push.Production,
 	}
 
 	r := mux.NewRouter()

@@ -20,8 +20,9 @@ const (
 
 // Service is the Apple Push Notification Service that you send notifications to.
 type Service struct {
-	Client *http.Client
 	Host   string
+	Client *http.Client
+	Topic  string // extracted from certificate
 }
 
 // Headers sent with a push to control the notification (optional)
@@ -37,9 +38,6 @@ type Headers struct {
 	// Allow Apple to group messages together to reduce power consumption.
 	// By default messages are sent immediately.
 	LowPriority bool
-
-	// Topic for certificates with multiple topics.
-	Topic string
 }
 
 // Error responses from Apple
@@ -113,6 +111,9 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	}
 	req.Header.Set("Content-Type", "application/json")
 	headers.set(req.Header)
+	if s.Topic != "" {
+		req.Header.Set("apns-topic", s.Topic)
+	}
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
@@ -166,10 +167,6 @@ func (h *Headers) set(reqHeader http.Header) {
 	if h.LowPriority {
 		reqHeader.Set("apns-priority", "5")
 	} // when omitted, the default priority is 10
-
-	if h.Topic != "" {
-		reqHeader.Set("apns-topic", h.Topic)
-	}
 }
 
 // mapErrorReason converts Apple error responses into exported Err variables

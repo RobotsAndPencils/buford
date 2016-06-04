@@ -75,14 +75,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client, err := push.NewClient(certificate.TLS(cert, key))
+	service, err := push.NewService(push.Development, certificate.TLS(cert, key))
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	service := push.Service{
-		Client: client,
-		Host:   push.Development,
 	}
 
 	p := payload.APS{
