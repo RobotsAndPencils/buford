@@ -1,8 +1,7 @@
 package main
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"html/template"
@@ -22,16 +21,15 @@ var (
 	website = pushpackage.Website{
 		Name:            "Buford",
 		PushID:          "web.com.github.RobotsAndPencils.buford",
-		AllowedDomains:  []string{"https://9aea51d1.ngrok.io"},
-		URLFormatString: `https://9aea51d1.ngrok.io/click?q=%@`,
+		AllowedDomains:  []string{"https://e31340d3.ngrok.io"},
+		URLFormatString: `https://e31340d3.ngrok.io/click?q=%@`,
 		// AuthenticationToken identifies the user (16+ characters)
 		AuthenticationToken: "19f8d7a6e9fb8a7f6d9330dabe",
-		WebServiceURL:       "https://9aea51d1.ngrok.io",
+		WebServiceURL:       "https://e31340d3.ngrok.io",
 	}
 
-	// Cert and private key for signing push packages.
-	cert       *x509.Certificate
-	privateKey *rsa.PrivateKey
+	// Cert for signing push packages.
+	cert tls.Certificate
 
 	// Service and device token to send push notifications.
 	service     *push.Service
@@ -85,7 +83,7 @@ func pushPackagesHandler(w http.ResponseWriter, r *http.Request) {
 	pkg.File("icon.iconset/icon_32x32.png", "../../testdata/gopher.png")
 	pkg.File("icon.iconset/icon_16x16@2x.png", "../../testdata/gopher.png")
 	pkg.File("icon.iconset/icon_16x16.png", "../../testdata/gopher.png")
-	if err := pkg.Sign(cert, privateKey, nil); err != nil {
+	if err := pkg.Sign(cert, nil); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -137,12 +135,12 @@ func main() {
 	flag.Parse()
 
 	var err error
-	cert, privateKey, err = certificate.Load(filename, password)
+	cert, err = certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	service, err = push.NewService(push.Production, certificate.TLS(cert, privateKey))
+	service, err = push.NewService(push.Production, cert)
 	if err != nil {
 		log.Fatal(err)
 	}

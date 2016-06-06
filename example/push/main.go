@@ -19,12 +19,12 @@ func main() {
 	flag.StringVar(&environment, "e", "development", "Environment")
 	flag.Parse()
 
-	cert, key, err := certificate.Load(filename, password)
+	cert, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	service, err := push.NewService(push.Development, certificate.TLS(cert, key))
+	service, err := push.NewService(push.Development, cert)
 	if err != nil {
 		log.Fatal(err)
 	}

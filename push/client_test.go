@@ -10,12 +10,12 @@ import (
 func TestNewService(t *testing.T) {
 	const name = "../testdata/cert.p12"
 
-	cert, key, err := certificate.Load(name, "")
+	cert, err := certificate.Load(name, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	service, err := push.NewService(push.Development, certificate.TLS(cert, key))
+	service, err := push.NewService(push.Development, cert)
 	if err != nil {
 		t.Fatal(err)
 	}
