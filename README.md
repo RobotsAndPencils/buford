@@ -143,6 +143,19 @@ id, err := service.PushBytes(deviceToken, nil, b)
 
 Whether you use Push or PushBytes, the underlying HTTP/2 connection to APNS will be reused.
 
+#### Error responses
+
+Push and PushBytes may return an `error`. It could be an error the JSON encoding or HTTP request, or it could be a `push.Error` which contains the response from Apple. To access the Reason and Status code, you must convert the `error` to a `push.Error` as follows:
+
+```go
+if e, ok := err.(*push.Error); ok {
+	switch e.Reason {
+	case push.ErrBadDeviceToken:
+		// handle error
+	}
+}
+```
+
 ### Website Push
 
 Before you can send push notifications through Safari and the Notification Center, you must provide a push package, which is a signed zip file containing some JSON and icons.
