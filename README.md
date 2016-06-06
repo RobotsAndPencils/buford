@@ -70,19 +70,14 @@ func main() {
 	password := ""
 	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
 
-	cert, key, err := certificate.Load(filename, password)
+	cert, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client, err := push.NewClient(certificate.TLS(cert, key))
+	service, err := push.NewService(push.Development, cert)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	service := push.Service{
-		Client: client,
-		Host:   push.Development,
 	}
 
 	p := payload.APS{
@@ -96,6 +91,7 @@ func main() {
 	}
 }
 ```
+
 #### Headers
 
 You can specify an ID, expiration, priority, and other parameters via the Headers struct.
@@ -145,7 +141,7 @@ Whether you use Push or PushBytes, the underlying HTTP/2 connection to APNS will
 
 #### Error responses
 
-Push and PushBytes may return an `error`. It could be an error the JSON encoding or HTTP request, or it could be a `push.Error` which contains the response from Apple. To access the Reason and Status code, you must convert the `error` to a `push.Error` as follows:
+Push and PushBytes may return an `error`. It could be an error the JSON encoding or HTTP request, or it could be a `push.Error` which contains the response from Apple. To access the Reason and HTTP Status code, you must convert the `error` to a `push.Error` as follows:
 
 ```go
 if e, ok := err.(*push.Error); ok {
@@ -167,7 +163,7 @@ pkg := pushpackage.New(w)
 pkg.EncodeJSON("website.json", website)
 pkg.File("icon.iconset/icon_128x128@2x.png", "static/icon_128x128@2x.png")
 // other icons... (required)
-if err := pkg.Sign(cert, privateKey, nil); err != nil {
+if err := pkg.Sign(cert, nil); err != nil {
 	log.Fatal(err)
 }
 ```

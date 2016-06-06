@@ -33,7 +33,7 @@ func main() {
 	flag.StringVar(&intermediate, "i", "", "Path to WWDR intermediate .cer file")
 	flag.Parse()
 
-	cert, privateKey, err := certificate.Load(filename, password)
+	cert, err := certificate.Load(filename, password)
 	failIfError(err)
 
 	wwdr, err := loadWWDR(intermediate)
@@ -60,6 +60,6 @@ func main() {
 		pkg.File(name, "./Event.pass/"+name)
 	}
 
-	err = pkg.Sign(cert, privateKey, wwdr)
+	err = pkg.Sign(cert, wwdr)
 	failIfError(err)
 }

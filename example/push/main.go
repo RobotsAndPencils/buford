@@ -19,19 +19,14 @@ func main() {
 	flag.StringVar(&environment, "e", "development", "Environment")
 	flag.Parse()
 
-	cert, key, err := certificate.Load(filename, password)
+	cert, err := certificate.Load(filename, password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client, err := push.NewClient(certificate.TLS(cert, key))
+	service, err := push.NewService(push.Development, cert)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	service := push.Service{
-		Client: client,
-		Host:   push.Development,
 	}
 	if environment == "production" {
 		service.Host = push.Production
