@@ -16,42 +16,35 @@ type Error struct {
 // Service error responses.
 var (
 	// These could be checked prior to sending the request to Apple.
-
 	ErrPayloadEmpty    = errors.New("PayloadEmpty")
 	ErrPayloadTooLarge = errors.New("PayloadTooLarge")
 
 	// Device token errors.
-
 	ErrMissingDeviceToken = errors.New("MissingDeviceToken")
 	ErrBadDeviceToken     = errors.New("BadDeviceToken")
 	ErrTooManyRequests    = errors.New("TooManyRequests")
 
 	// Header errors.
-
 	ErrBadMessageID      = errors.New("BadMessageID")
 	ErrBadExpirationDate = errors.New("BadExpirationDate")
 	ErrBadPriority       = errors.New("BadPriority")
 	ErrBadTopic          = errors.New("BadTopic")
 
 	// Certificate and topic errors.
-
 	ErrBadCertificate            = errors.New("BadCertificate")
 	ErrBadCertificateEnvironment = errors.New("BadCertificateEnvironment")
 	ErrForbidden                 = errors.New("Forbidden")
-
-	ErrMissingTopic           = errors.New("MissingTopic")
-	ErrTopicDisallowed        = errors.New("TopicDisallowed")
-	ErrUnregistered           = errors.New("Unregistered")
-	ErrDeviceTokenNotForTopic = errors.New("DeviceTokenNotForTopic")
+	ErrMissingTopic              = errors.New("MissingTopic")
+	ErrTopicDisallowed           = errors.New("TopicDisallowed")
+	ErrUnregistered              = errors.New("Unregistered")
+	ErrDeviceTokenNotForTopic    = errors.New("DeviceTokenNotForTopic")
 
 	// These errors should never happen when using Push.
-
 	ErrDuplicateHeaders = errors.New("DuplicateHeaders")
 	ErrBadPath          = errors.New("BadPath")
 	ErrMethodNotAllowed = errors.New("MethodNotAllowed")
 
 	// Fatal server errors.
-
 	ErrIdleTimeout         = errors.New("IdleTimeout")
 	ErrShutdown            = errors.New("Shutdown")
 	ErrInternalServerError = errors.New("InternalServerError")
