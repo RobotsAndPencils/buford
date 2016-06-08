@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"golang.org/x/crypto/pkcs12"
 )
@@ -43,6 +44,20 @@ func Decode(p12 []byte, password string) (tls.Certificate, error) {
 		PrivateKey:  privateKey,
 		Leaf:        cert,
 	}, nil
+}
+
+// TopicFromCert extracts topic from a certificate's common name.
+func TopicFromCert(cert tls.Certificate) string {
+	commonName := cert.Leaf.Subject.CommonName
+
+	var topic string
+	// Apple Push Services: {bundle}
+	// Apple Development IOS Push Services: {bundle}
+	n := strings.Index(commonName, ":")
+	if n != -1 {
+		topic = strings.TrimSpace(commonName[n+1:])
+	}
+	return topic
 }
 
 // verify checks if a certificate has expired

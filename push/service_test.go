@@ -26,9 +26,8 @@ func TestNewService(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	const expectedTopic = ""
-	if service.Topic != expectedTopic {
-		t.Errorf("Expected topic %q, got %q.", expectedTopic, service.Topic)
+	if service.Host != push.Development {
+		t.Errorf("Expected host %q, got %q", push.Development, service.Host)
 	}
 }
 
