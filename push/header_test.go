@@ -11,6 +11,7 @@ func TestHeaders(t *testing.T) {
 		ID:          "uuid",
 		Expiration:  time.Unix(12622780800, 0),
 		LowPriority: true,
+		Topic:       "bundle-id",
 	}
 
 	reqHeader := http.Header{}
@@ -19,6 +20,7 @@ func TestHeaders(t *testing.T) {
 	testHeader(t, reqHeader, "apns-id", "uuid")
 	testHeader(t, reqHeader, "apns-expiration", "12622780800")
 	testHeader(t, reqHeader, "apns-priority", "5")
+	testHeader(t, reqHeader, "apns-topic", "bundle-id")
 }
 
 func TestNilHeader(t *testing.T) {
@@ -29,6 +31,7 @@ func TestNilHeader(t *testing.T) {
 	testHeader(t, reqHeader, "apns-id", "")
 	testHeader(t, reqHeader, "apns-expiration", "")
 	testHeader(t, reqHeader, "apns-priority", "")
+	testHeader(t, reqHeader, "apns-topic", "")
 }
 
 func TestEmptyHeaders(t *testing.T) {
@@ -39,6 +42,7 @@ func TestEmptyHeaders(t *testing.T) {
 	testHeader(t, reqHeader, "apns-id", "")
 	testHeader(t, reqHeader, "apns-expiration", "")
 	testHeader(t, reqHeader, "apns-priority", "")
+	testHeader(t, reqHeader, "apns-topic", "")
 }
 
 func testHeader(t *testing.T, reqHeader http.Header, key, expected string) {

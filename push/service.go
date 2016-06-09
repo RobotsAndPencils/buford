@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"golang.org/x/net/http2"
@@ -24,12 +23,11 @@ const (
 type Service struct {
 	Host   string
 	Client *http.Client
-	Topic  string
 }
 
-// NewService sets up an HTTP/2 client for a certificate and extracts the
-// Topic from the certificate. If you need to do something custom, you can
-// always override the fields in Service, e.g. to specify your own http.Client.
+// NewService sets up an HTTP/2 client for a certificate. If you need to do
+// something custom, you can always override the fields in Service,
+// e.g. to specify your own http.Client.
 func NewService(host string, cert tls.Certificate) (*Service, error) {
 	client, err := newClient(cert)
 	if err != nil {
@@ -39,7 +37,6 @@ func NewService(host string, cert tls.Certificate) (*Service, error) {
 	return &Service{
 		Client: client,
 		Host:   host,
-		Topic:  topicFromCert(cert.Leaf.Subject.CommonName),
 	}, nil
 }
 
@@ -56,18 +53,6 @@ func newClient(cert tls.Certificate) (*http.Client, error) {
 	}
 
 	return &http.Client{Transport: transport}, nil
-}
-
-// topicFromCert extracts bundle/topic from cert common name
-// Apple Push Services: {bundle}
-// Apple Development IOS Push Services: {bundle}
-func topicFromCert(commonName string) string {
-	var bundle string
-	n := strings.Index(commonName, ":")
-	if n != -1 {
-		bundle = strings.TrimSpace(commonName[n+1:])
-	}
-	return bundle
 }
 
 // Push notification to APN service after performing serialization.
@@ -89,9 +74,6 @@ func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte
 	}
 	req.Header.Set("Content-Type", "application/json")
 	headers.set(req.Header)
-	if s.Topic != "" {
-		req.Header.Set("apns-topic", s.Topic)
-	}
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
