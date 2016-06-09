@@ -27,21 +27,7 @@ type Service struct {
 	responses     chan response
 }
 
-// notification to send.
-type notification struct {
-	DeviceToken string
-	Headers     *Headers
-	Payload     []byte
-}
-
-// response from sending notification.
-type response struct {
-	ApnsID       string
-	Err          error
-	Notification *notification
-}
-
-// NewService creates a new service.
+// NewService creates a new service to connect to APN.
 func NewService(client *http.Client, host string, workers uint) *Service {
 	service := &Service{
 		Client: client,
@@ -58,20 +44,9 @@ func NewService(client *http.Client, host string, workers uint) *Service {
 	return service
 }
 
-// Shutdown the workers
+// Shutdown the workers.
 func (s *Service) Shutdown() {
 	close(s.notifications)
-}
-
-func worker(s *Service) {
-	for {
-		n, more := <-s.notifications
-		if !more {
-			return
-		}
-		id, err := s.pushSync(n.DeviceToken, n.Headers, n.Payload)
-		s.responses <- response{ApnsID: id, Err: err, Notification: &n}
-	}
 }
 
 // NewClient sets up an HTTP/2 client for a certificate.
@@ -99,10 +74,35 @@ func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) {
 	s.notifications <- n
 }
 
-// Response blocks waiting for a response. Order of responses isn't guaranteed.
+// Response blocks waiting for a response. Responses may be received in any order.
 func (s *Service) Response() (id string, deviceToken string, err error) {
 	resp := <-s.responses
 	return resp.ApnsID, resp.Notification.DeviceToken, resp.Err
+}
+
+// notification to send.
+type notification struct {
+	DeviceToken string
+	Headers     *Headers
+	Payload     []byte
+}
+
+// response from sending notification.
+type response struct {
+	ApnsID       string
+	Err          error
+	Notification *notification
+}
+
+func worker(s *Service) {
+	for {
+		n, more := <-s.notifications
+		if !more {
+			return
+		}
+		id, err := s.pushSync(n.DeviceToken, n.Headers, n.Payload)
+		s.responses <- response{ApnsID: id, Err: err, Notification: &n}
+	}
 }
 
 // pushSync sends a notification and waits for a response.
