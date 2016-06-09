@@ -24,20 +24,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service, err := push.NewService(push.Development, cert)
+	client, err := push.NewClient(cert)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	service := push.NewService(client, push.Development, 1)
 	if environment == "production" {
 		service.Host = push.Production
 	}
+	defer service.Shutdown()
 
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 		Badge: badge.New(42),
 	}
 
-	id, err := service.Push(deviceToken, &push.Headers{}, p)
+	err = service.Push(deviceToken, &push.Headers{}, p)
+	if err != nil {
+		log.Fatal(err)
+	}
+	id, _, err := service.Response()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -32,10 +32,12 @@ func BenchmarkPush(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	service, err := push.NewService(push.Development, cert)
+	client, err := push.NewClient(cert)
 	if err != nil {
 		b.Fatal(err)
 	}
+
+	service := push.NewService(client, push.Development, 20)
 	if environment == "production" {
 		service.Host = push.Production
 	}
@@ -51,16 +53,23 @@ func BenchmarkPush(b *testing.B) {
 	}
 
 	// warm up the connection
-	_, err = service.PushBytes(deviceToken, nil, payload)
+	service.PushBytes(deviceToken, nil, payload)
+	_, _, err = service.Response()
 	if err != nil {
 		b.Fatal(err)
 	}
 
+	go func() {
+		for {
+			_, _, err := service.Response()
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	}()
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err = service.PushBytes(deviceToken, nil, payload)
-		if err != nil {
-			b.Fatal(err)
-		}
+		service.PushBytes(deviceToken, nil, payload)
 	}
 }

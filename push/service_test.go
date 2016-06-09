@@ -13,7 +13,7 @@ import (
 	"github.com/RobotsAndPencils/buford/push"
 )
 
-func TestNewService(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	const name = "../testdata/cert.p12"
 
 	cert, err := certificate.Load(name, "")
@@ -21,13 +21,9 @@ func TestNewService(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	service, err := push.NewService(push.Development, cert)
+	_, err = push.NewClient(cert)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	if service.Host != push.Development {
-		t.Errorf("Expected host %q, got %q", push.Development, service.Host)
 	}
 }
 
@@ -56,12 +52,11 @@ func TestPush(t *testing.T) {
 		w.Header().Set("apns-id", apnsID)
 	})
 
-	service := push.Service{
-		Client: http.DefaultClient,
-		Host:   server.URL,
-	}
+	service := push.NewService(http.DefaultClient, server.URL, 1)
+	defer service.Shutdown()
 
-	id, err := service.PushBytes(deviceToken, &push.Headers{}, payload)
+	service.PushBytes(deviceToken, &push.Headers{}, payload)
+	id, _, err := service.Response()
 	if err != nil {
 		t.Error(err)
 	}
@@ -82,12 +77,11 @@ func TestBadPriorityPush(t *testing.T) {
 		w.Write([]byte(`{"reason": "BadPriority"}`))
 	})
 
-	service := push.Service{
-		Client: http.DefaultClient,
-		Host:   server.URL,
-	}
+	service := push.NewService(http.DefaultClient, server.URL, 1)
+	defer service.Shutdown()
 
-	_, err := service.PushBytes(deviceToken, nil, payload)
+	service.PushBytes(deviceToken, nil, payload)
+	_, _, err := service.Response()
 
 	e, ok := err.(*push.Error)
 	if !ok {
@@ -124,12 +118,11 @@ func TestTimestampError(t *testing.T) {
 		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800000}`))
 	})
 
-	service := push.Service{
-		Client: http.DefaultClient,
-		Host:   server.URL,
-	}
+	service := push.NewService(http.DefaultClient, server.URL, 1)
+	defer service.Shutdown()
 
-	_, err := service.PushBytes(deviceToken, nil, payload)
+	service.PushBytes(deviceToken, nil, payload)
+	_, _, err := service.Response()
 
 	e, ok := err.(*push.Error)
 	if !ok {

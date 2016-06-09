@@ -56,7 +56,12 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 		URLArgs: []string{"hello"},
 	}
 
-	id, err := service.Push(deviceToken, nil, p)
+	err := service.Push(deviceToken, nil, p)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	id, _, err := service.Response()
 	if err != nil {
 		log.Println(err)
 		return
@@ -140,10 +145,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service, err = push.NewService(push.Production, cert)
+	client, err := push.NewClient(cert)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	service = push.NewService(client, push.Production, 1)
+	defer service.Shutdown()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")

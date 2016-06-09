@@ -21,27 +21,61 @@ const (
 
 // Service is the Apple Push Notification Service that you send notifications to.
 type Service struct {
-	Host   string
-	Client *http.Client
+	Host          string
+	Client        *http.Client
+	notifications chan notification
+	responses     chan response
 }
 
-// NewService sets up an HTTP/2 client for a certificate. If you need to do
-// something custom, you can always override the fields in Service,
-// e.g. to specify your own http.Client.
-func NewService(host string, cert tls.Certificate) (*Service, error) {
-	client, err := newClient(cert)
-	if err != nil {
-		return nil, err
-	}
+// notification to send.
+type notification struct {
+	DeviceToken string
+	Headers     *Headers
+	Payload     []byte
+}
 
-	return &Service{
+// response from sending notification.
+type response struct {
+	ApnsID       string
+	Err          error
+	Notification *notification
+}
+
+// NewService creates a new service.
+func NewService(client *http.Client, host string, workers uint) *Service {
+	service := &Service{
 		Client: client,
 		Host:   host,
-	}, nil
+		// unbuffered channels
+		notifications: make(chan notification),
+		responses:     make(chan response),
+	}
+
+	// startup workers to send notifications
+	for i := uint(0); i < workers; i++ {
+		go worker(service)
+	}
+	return service
+}
+
+// Shutdown the workers
+func (s *Service) Shutdown() {
+	close(s.notifications)
+}
+
+func worker(s *Service) {
+	for {
+		n, more := <-s.notifications
+		if !more {
+			return
+		}
+		id, err := s.pushBytes(n.DeviceToken, n.Headers, n.Payload)
+		s.responses <- response{ApnsID: id, Err: err, Notification: &n}
+	}
 }
 
 // NewClient sets up an HTTP/2 client for a certificate.
-func newClient(cert tls.Certificate) (*http.Client, error) {
+func NewClient(cert tls.Certificate) (*http.Client, error) {
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}
@@ -55,17 +89,34 @@ func newClient(cert tls.Certificate) (*http.Client, error) {
 	return &http.Client{Transport: transport}, nil
 }
 
-// Push notification to APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) (string, error) {
+// Push notification queues a notification APN service after performing serialization.
+func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) error {
 	b, err := json.Marshal(payload)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return s.PushBytes(deviceToken, headers, b)
+	s.PushBytes(deviceToken, headers, b)
+	return nil
 }
 
-// PushBytes notification to APN service.
-func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) (string, error) {
+// PushBytes queues a notification to APN service.
+func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) {
+	n := notification{
+		DeviceToken: deviceToken,
+		Headers:     headers,
+		Payload:     payload,
+	}
+	s.notifications <- n
+}
+
+// Response blocks waiting for a response. Order of responses isn't guaranteed.
+func (s *Service) Response() (id string, deviceToken string, err error) {
+	resp := <-s.responses
+	return resp.ApnsID, resp.Notification.DeviceToken, resp.Err
+}
+
+// pushBytes sends a notification and waits for a response.
+func (s *Service) pushBytes(deviceToken string, headers *Headers, payload []byte) (string, error) {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
