@@ -1,5 +1,8 @@
 // Package certificate loads Push Services certificates exported from your
 // Keychain in Personal Information Exchange format (*.p12).
+//
+// If you prefer to use *.PEM files, you can of course use tls.LoadX509KeyPair
+// or tls.X509KeyPair from the standard library.
 package certificate
 
 import (

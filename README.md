@@ -89,6 +89,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("apns-id:", id)
 }
 ```
 
