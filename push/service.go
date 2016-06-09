@@ -69,7 +69,7 @@ func worker(s *Service) {
 		if !more {
 			return
 		}
-		id, err := s.pushBytes(n.DeviceToken, n.Headers, n.Payload)
+		id, err := s.pushSync(n.DeviceToken, n.Headers, n.Payload)
 		s.responses <- response{ApnsID: id, Err: err, Notification: &n}
 	}
 }
@@ -89,18 +89,8 @@ func NewClient(cert tls.Certificate) (*http.Client, error) {
 	return &http.Client{Transport: transport}, nil
 }
 
-// Push notification queues a notification APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) error {
-	b, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-	s.PushBytes(deviceToken, headers, b)
-	return nil
-}
-
-// PushBytes queues a notification to APN service.
-func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) {
+// Push queues a notification to the APN service.
+func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) {
 	n := notification{
 		DeviceToken: deviceToken,
 		Headers:     headers,
@@ -115,8 +105,8 @@ func (s *Service) Response() (id string, deviceToken string, err error) {
 	return resp.ApnsID, resp.Notification.DeviceToken, resp.Err
 }
 
-// pushBytes sends a notification and waits for a response.
-func (s *Service) pushBytes(deviceToken string, headers *Headers, payload []byte) (string, error) {
+// pushSync sends a notification and waits for a response.
+func (s *Service) pushSync(deviceToken string, headers *Headers, payload []byte) (string, error) {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))

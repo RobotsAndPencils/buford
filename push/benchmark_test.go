@@ -53,7 +53,7 @@ func BenchmarkPush(b *testing.B) {
 	}
 
 	// warm up the connection
-	service.PushBytes(deviceToken, nil, payload)
+	service.Push(deviceToken, nil, payload)
 	_, _, err = service.Response()
 	if err != nil {
 		b.Fatal(err)
@@ -70,6 +70,6 @@ func BenchmarkPush(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		service.PushBytes(deviceToken, nil, payload)
+		service.Push(deviceToken, nil, payload)
 	}
 }

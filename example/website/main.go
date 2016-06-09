@@ -55,12 +55,12 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 		// URLArgs must match placeholders in URLFormatString
 		URLArgs: []string{"hello"},
 	}
-
-	err := service.Push(deviceToken, nil, p)
+	b, err := json.Marshal(p)
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
+
+	service.Push(deviceToken, nil, b)
 	id, _, err := service.Response()
 	if err != nil {
 		log.Println(err)

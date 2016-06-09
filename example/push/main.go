@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 
@@ -39,14 +40,15 @@ func main() {
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 		Badge: badge.New(42),
 	}
+	b, err := json.Marshal(p)
+	if err != nil {
+		log.Fatal(b)
+	}
 
-	err = service.Push(deviceToken, &push.Headers{}, p)
+	service.Push(deviceToken, nil, b)
+	id, deviceToken, err := service.Response()
 	if err != nil {
 		log.Fatal(err)
 	}
-	id, _, err := service.Response()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("apns-id:", id)
+	log.Printf("device: %v, apns-id %v", deviceToken, id)
 }

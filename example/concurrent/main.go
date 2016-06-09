@@ -12,13 +12,6 @@ import (
 	"github.com/RobotsAndPencils/buford/push"
 )
 
-// Notification to send.
-type Notification struct {
-	DeviceToken string
-	Headers     *push.Headers
-	Payload     []byte
-}
-
 func main() {
 	var deviceToken, filename, password, environment string
 	var workers uint
@@ -72,26 +65,18 @@ func main() {
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 	}
-
 	bytes, err := json.Marshal(p)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	n := Notification{
-		DeviceToken: deviceToken,
-		Headers:     &push.Headers{},
-		Payload:     bytes,
 	}
 
 	start := time.Now()
 	// send notifications
 	for i := 0; i < number; i++ {
 		wg.Add(1)
-		service.PushBytes(n.DeviceToken, n.Headers, n.Payload)
+		service.Push(deviceToken, nil, bytes)
 	}
 	service.Shutdown()
-
 	wg.Wait()
 	elapsed := time.Since(start)
 

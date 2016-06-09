@@ -55,7 +55,7 @@ func TestPush(t *testing.T) {
 	service := push.NewService(http.DefaultClient, server.URL, 1)
 	defer service.Shutdown()
 
-	service.PushBytes(deviceToken, &push.Headers{}, payload)
+	service.Push(deviceToken, &push.Headers{}, payload)
 	id, _, err := service.Response()
 	if err != nil {
 		t.Error(err)
@@ -80,7 +80,7 @@ func TestBadPriorityPush(t *testing.T) {
 	service := push.NewService(http.DefaultClient, server.URL, 1)
 	defer service.Shutdown()
 
-	service.PushBytes(deviceToken, nil, payload)
+	service.Push(deviceToken, nil, payload)
 	_, _, err := service.Response()
 
 	e, ok := err.(*push.Error)
@@ -121,7 +121,7 @@ func TestTimestampError(t *testing.T) {
 	service := push.NewService(http.DefaultClient, server.URL, 1)
 	defer service.Shutdown()
 
-	service.PushBytes(deviceToken, nil, payload)
+	service.Push(deviceToken, nil, payload)
 	_, _, err := service.Response()
 
 	e, ok := err.(*push.Error)
