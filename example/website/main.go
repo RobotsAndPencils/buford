@@ -60,8 +60,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	service.Push(deviceToken, nil, b)
-	id, _, err := service.Response()
+	id, err := service.Push(deviceToken, nil, b)
 	if err != nil {
 		log.Println(err)
 		return
@@ -150,8 +149,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service = push.NewService(client, push.Production, 1)
-	defer service.Shutdown()
+	service = push.NewService(client, push.Production)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")

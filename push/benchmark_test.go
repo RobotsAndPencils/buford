@@ -11,20 +11,24 @@ import (
 	"github.com/RobotsAndPencils/buford/push"
 )
 
-var deviceToken, filename, password, environment string
+var (
+	deviceToken        string
+	filename, password string
+	workers            uint
+)
 
 func init() {
 	flag.StringVar(&deviceToken, "token", "", "Device token")
 	flag.StringVar(&filename, "cert", "", "Path to p12 certificate file")
 	flag.StringVar(&password, "pwd", "", "Password for p12 file.")
-	flag.StringVar(&environment, "env", "development", "Environment")
+	flag.UintVar(&workers, "w", 20, "Workers to send notifications")
 	flag.Parse()
 }
 
-// GODEBUG=http2debug=1 go test ./push -cert ../cert.p12 -token device-token -v -bench . -benchtime 30s
+// GODEBUG=http2debug=1 go test ./push -cert ../cert.p12 -token device-token -v -bench . -benchtime 10s
 func BenchmarkPush(b *testing.B) {
 	if filename == "" || deviceToken == "" {
-		b.Skipf("Skipping benchmark without cert file and device token.")
+		b.Skip("Skipping benchmark without cert file and device token.")
 	}
 
 	cert, err := certificate.Load(filename, password)
@@ -37,31 +41,28 @@ func BenchmarkPush(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	service := push.NewService(client, push.Development, 20)
-	if environment == "production" {
-		service.Host = push.Production
-	}
+	service := push.NewService(client, push.Development)
+	queue := push.NewQueue(service, workers)
 
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 		Badge: badge.New(42),
 	}
-
-	payload, err := json.Marshal(p)
+	bytes, err := json.Marshal(p)
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	// warm up the connection
-	service.Push(deviceToken, nil, payload)
-	_, _, err = service.Response()
+	_, err = service.Push(deviceToken, nil, bytes)
 	if err != nil {
 		b.Fatal(err)
 	}
 
+	// handle responses
 	go func() {
 		for {
-			_, _, err := service.Response()
+			_, _, err := queue.Response()
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -69,7 +70,10 @@ func BenchmarkPush(b *testing.B) {
 	}()
 
 	b.ResetTimer()
+	// this benchmark is the time to send the notifications without waiting
+	// for the responses
 	for i := 0; i < b.N; i++ {
-		service.Push(deviceToken, nil, payload)
+		queue.Push(deviceToken, nil, bytes)
 	}
+	queue.Wait()
 }

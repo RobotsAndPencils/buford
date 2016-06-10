@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
-	"sync"
+	"os"
 	"time"
 
 	"github.com/RobotsAndPencils/buford/certificate"
@@ -13,7 +14,9 @@ import (
 )
 
 func main() {
-	var deviceToken, filename, password, environment string
+	log.SetFlags(log.Ltime | log.Lmicroseconds)
+
+	var deviceToken, filename, password, environment, host string
 	var workers uint
 	var number int
 
@@ -25,39 +28,50 @@ func main() {
 	flag.IntVar(&number, "n", 100, "Number of notifications to send")
 	flag.Parse()
 
-	log.SetFlags(log.Ltime | log.Lmicroseconds)
+	// ensure required flags are set:
+	halt := false
+	if deviceToken == "" {
+		fmt.Println("Device token is required.")
+		halt = true
+	}
+	if filename == "" {
+		fmt.Println("Path to .p12 certificate file is required.")
+		halt = true
+	}
+	switch environment {
+	case "development":
+		host = push.Development
+	case "production":
+		host = push.Production
+	default:
+		fmt.Println("Environment can be development or production.")
+		halt = true
+	}
+	if halt {
+		flag.Usage()
+		os.Exit(2)
+	}
 
+	// load a certificate and use it to connect to the APN service:
 	cert, err := certificate.Load(filename, password)
-	if err != nil {
-		log.Fatal(err)
-	}
+	exitOnError(err)
 
-	// establish a connection to Apple
 	client, err := push.NewClient(cert)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	service := push.NewService(client, push.Development, workers)
-	if environment == "production" {
-		service.Host = push.Production
-	}
-
-	// wait group to wait for all responses
-	var wg sync.WaitGroup
+	exitOnError(err)
+	service := push.NewService(client, host)
+	queue := push.NewQueue(service, workers)
 
 	// process responses
 	go func() {
 		count := 1
 		for {
-			id, device, err := service.Response()
+			id, device, err := queue.Response()
 			if err != nil {
 				log.Printf("(%d) device: %s, error: %v", count, device, err)
 			} else {
 				log.Printf("(%d) device: %s, apns-id: %s", count, device, id)
 			}
 			count++
-			wg.Done()
 		}
 	}()
 
@@ -65,20 +79,24 @@ func main() {
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 	}
-	bytes, err := json.Marshal(p)
-	if err != nil {
-		log.Fatal(err)
-	}
+	b, err := json.Marshal(p)
+	exitOnError(err)
 
+	// send notifications:
 	start := time.Now()
-	// send notifications
 	for i := 0; i < number; i++ {
-		wg.Add(1)
-		service.Push(deviceToken, nil, bytes)
+		queue.Push(deviceToken, nil, b)
 	}
-	service.Shutdown()
-	wg.Wait()
+	// done sending notifications, wait for all responses:
+	queue.Wait()
 	elapsed := time.Since(start)
 
 	log.Printf("Time for %d responses: %s (%s ea.)", number, elapsed, elapsed/time.Duration(number))
+}
+
+func exitOnError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

@@ -52,11 +52,9 @@ func TestPush(t *testing.T) {
 		w.Header().Set("apns-id", apnsID)
 	})
 
-	service := push.NewService(http.DefaultClient, server.URL, 1)
-	defer service.Shutdown()
+	service := push.NewService(http.DefaultClient, server.URL)
 
-	service.Push(deviceToken, &push.Headers{}, payload)
-	id, _, err := service.Response()
+	id, err := service.Push(deviceToken, &push.Headers{}, payload)
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,11 +75,9 @@ func TestBadPriorityPush(t *testing.T) {
 		w.Write([]byte(`{"reason": "BadPriority"}`))
 	})
 
-	service := push.NewService(http.DefaultClient, server.URL, 1)
-	defer service.Shutdown()
+	service := push.NewService(http.DefaultClient, server.URL)
 
-	service.Push(deviceToken, nil, payload)
-	_, _, err := service.Response()
+	_, err := service.Push(deviceToken, nil, payload)
 
 	e, ok := err.(*push.Error)
 	if !ok {
@@ -118,11 +114,9 @@ func TestTimestampError(t *testing.T) {
 		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800000}`))
 	})
 
-	service := push.NewService(http.DefaultClient, server.URL, 1)
-	defer service.Shutdown()
+	service := push.NewService(http.DefaultClient, server.URL)
 
-	service.Push(deviceToken, nil, payload)
-	_, _, err := service.Response()
+	_, err := service.Push(deviceToken, nil, payload)
 
 	e, ok := err.(*push.Error)
 	if !ok {

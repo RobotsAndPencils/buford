@@ -21,32 +21,16 @@ const (
 
 // Service is the Apple Push Notification Service that you send notifications to.
 type Service struct {
-	Host          string
-	Client        *http.Client
-	notifications chan notification
-	responses     chan response
+	Host   string
+	Client *http.Client
 }
 
 // NewService creates a new service to connect to APN.
-func NewService(client *http.Client, host string, workers uint) *Service {
-	service := &Service{
+func NewService(client *http.Client, host string) *Service {
+	return &Service{
 		Client: client,
 		Host:   host,
-		// unbuffered channels
-		notifications: make(chan notification),
-		responses:     make(chan response),
 	}
-
-	// startup workers to send notifications
-	for i := uint(0); i < workers; i++ {
-		go worker(service)
-	}
-	return service
-}
-
-// Shutdown the workers.
-func (s *Service) Shutdown() {
-	close(s.notifications)
 }
 
 // NewClient sets up an HTTP/2 client for a certificate.
@@ -64,49 +48,8 @@ func NewClient(cert tls.Certificate) (*http.Client, error) {
 	return &http.Client{Transport: transport}, nil
 }
 
-// Push queues a notification to the APN service.
-func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) {
-	n := notification{
-		DeviceToken: deviceToken,
-		Headers:     headers,
-		Payload:     payload,
-	}
-	s.notifications <- n
-}
-
-// Response blocks waiting for a response. Responses may be received in any order.
-func (s *Service) Response() (id string, deviceToken string, err error) {
-	resp := <-s.responses
-	return resp.ApnsID, resp.Notification.DeviceToken, resp.Err
-}
-
-// notification to send.
-type notification struct {
-	DeviceToken string
-	Headers     *Headers
-	Payload     []byte
-}
-
-// response from sending notification.
-type response struct {
-	ApnsID       string
-	Err          error
-	Notification *notification
-}
-
-func worker(s *Service) {
-	for {
-		n, more := <-s.notifications
-		if !more {
-			return
-		}
-		id, err := s.pushSync(n.DeviceToken, n.Headers, n.Payload)
-		s.responses <- response{ApnsID: id, Err: err, Notification: &n}
-	}
-}
-
-// pushSync sends a notification and waits for a response.
-func (s *Service) pushSync(deviceToken string, headers *Headers, payload []byte) (string, error) {
+// Push sends a notification and waits for a response.
+func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (string, error) {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
