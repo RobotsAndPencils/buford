@@ -15,8 +15,10 @@ import (
 
 // Apple host locations for configuring Service.
 const (
-	Development = "https://api.development.push.apple.com"
-	Production  = "https://api.push.apple.com"
+	Development     = "https://api.development.push.apple.com"
+	Development2197 = "https://api.development.push.apple.com:2197"
+	Production      = "https://api.push.apple.com"
+	Production2197  = "https://api.push.apple.com:2197"
 )
 
 // Service is the Apple Push Notification Service that you send notifications to.
