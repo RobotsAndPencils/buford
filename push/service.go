@@ -25,23 +25,16 @@ type Service struct {
 	Client *http.Client
 }
 
-// NewService sets up an HTTP/2 client for a certificate. If you need to do
-// something custom, you can always override the fields in Service,
-// e.g. to specify your own http.Client.
-func NewService(host string, cert tls.Certificate) (*Service, error) {
-	client, err := newClient(cert)
-	if err != nil {
-		return nil, err
-	}
-
+// NewService creates a new service to connect to APN.
+func NewService(client *http.Client, host string) *Service {
 	return &Service{
 		Client: client,
 		Host:   host,
-	}, nil
+	}
 }
 
 // NewClient sets up an HTTP/2 client for a certificate.
-func newClient(cert tls.Certificate) (*http.Client, error) {
+func NewClient(cert tls.Certificate) (*http.Client, error) {
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}
@@ -55,17 +48,8 @@ func newClient(cert tls.Certificate) (*http.Client, error) {
 	return &http.Client{Transport: transport}, nil
 }
 
-// Push notification to APN service after performing serialization.
-func (s *Service) Push(deviceToken string, headers *Headers, payload interface{}) (string, error) {
-	b, err := json.Marshal(payload)
-	if err != nil {
-		return "", err
-	}
-	return s.PushBytes(deviceToken, headers, b)
-}
-
-// PushBytes notification to APN service.
-func (s *Service) PushBytes(deviceToken string, headers *Headers, payload []byte) (string, error) {
+// Push sends a notification and waits for a response.
+func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (string, error) {
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))

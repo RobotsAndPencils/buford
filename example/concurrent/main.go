@@ -4,21 +4,28 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/payload"
-	"github.com/RobotsAndPencils/buford/payload/badge"
 	"github.com/RobotsAndPencils/buford/push"
 )
 
 func main() {
+	log.SetFlags(log.Ltime | log.Lmicroseconds)
+
 	var deviceToken, filename, password, environment, host string
+	var workers uint
+	var number int
 
 	flag.StringVar(&deviceToken, "d", "", "Device token")
-	flag.StringVar(&filename, "c", "", "Path to .p12 certificate file.")
-	flag.StringVar(&password, "p", "", "Password for .p12 file.")
+	flag.StringVar(&filename, "c", "", "Path to p12 certificate file")
+	flag.StringVar(&password, "p", "", "Password for p12 file")
 	flag.StringVar(&environment, "e", "development", "Environment")
+	flag.UintVar(&workers, "w", 20, "Workers to send notifications")
+	flag.IntVar(&number, "n", 100, "Number of notifications to send")
 	flag.Parse()
 
 	// ensure required flags are set:
@@ -51,22 +58,40 @@ func main() {
 
 	client, err := push.NewClient(cert)
 	exitOnError(err)
-
 	service := push.NewService(client, host)
+	queue := push.NewQueue(service, workers)
 
-	// construct a payload to send to the device:
+	// process responses
+	go func() {
+		count := 1
+		for {
+			id, device, err := queue.Response()
+			if err != nil {
+				log.Printf("(%d) device: %s, error: %v", count, device, err)
+			} else {
+				log.Printf("(%d) device: %s, apns-id: %s", count, device, id)
+			}
+			count++
+		}
+	}()
+
+	// prepare notification(s) to send
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
-		Badge: badge.New(42),
 	}
 	b, err := json.Marshal(p)
 	exitOnError(err)
 
-	// push the notification:
-	id, err := service.Push(deviceToken, nil, b)
-	exitOnError(err)
+	// send notifications:
+	start := time.Now()
+	for i := 0; i < number; i++ {
+		queue.Push(deviceToken, nil, b)
+	}
+	// done sending notifications, wait for all responses:
+	queue.Wait()
+	elapsed := time.Since(start)
 
-	fmt.Println("apns-id:", id)
+	log.Printf("Time for %d responses: %s (%s ea.)", number, elapsed, elapsed/time.Duration(number))
 }
 
 func exitOnError(err error) {

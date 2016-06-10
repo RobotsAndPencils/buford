@@ -56,7 +56,8 @@ I am still looking for feedback on the API so it may change. Please copy Buford 
 package main
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
 
 	"github.com/RobotsAndPencils/buford/certificate"
 	"github.com/RobotsAndPencils/buford/payload"
@@ -64,34 +65,73 @@ import (
 	"github.com/RobotsAndPencils/buford/push"
 )
 
+// set these variables appropriately
+const (
+	filename = "/path/to/certificate.p12"
+	password = ""
+	host = push.Development
+	deviceToken = "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
+)
+
 func main() {
-	// set these variables appropriately
-	filename := "/path/to/certificate.p12"
-	password := ""
-	deviceToken := "c2732227a1d8021cfaf781d71fb2f908c61f5861079a00954a5453f1d0281433"
-
+	// load a certificate and use it to connect to the APN service:
 	cert, err := certificate.Load(filename, password)
-	if err != nil {
-		log.Fatal(err)
-	}
+	exitOnError(err)
 
-	service, err := push.NewService(push.Development, cert)
-	if err != nil {
-		log.Fatal(err)
-	}
+	client, err := push.NewClient(cert)
+	exitOnError(err)
 
+	service := push.NewService(client, host)
+
+	// construct a payload to send to the device:
 	p := payload.APS{
 		Alert: payload.Alert{Body: "Hello HTTP/2"},
 		Badge: badge.New(42),
 	}
+	b, err := json.Marshal(p)
+	exitOnError(err)
 
-	id, err := service.Push(deviceToken, nil, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("apns-id:", id)
+	// push the notification:
+	id, err := service.Push(deviceToken, nil, b)
+	exitOnError(err)
+
+	fmt.Println("apns-id:", id)
 }
 ```
+
+See `example/push` for the complete listing.
+
+#### Concurrent use
+
+HTTP/2 can send multiple requests over a single connection, but `service.Push` waits for a response before returning. Instead, you can wrap a `Service` in a queue to handle responses independently, allowing you to send multiple notifications at once.
+
+```go
+queue := push.NewQueue(service, workers)
+
+// process responses
+go func() {
+	for {
+		// Response blocks until a response is available
+		log.Println(queue.Response())
+	}
+}()
+
+// send the notifications
+for i := 0; i < number; i++ {
+	queue.Push(deviceToken, nil, b)
+}
+
+// done sending notifications, wait for all responses
+queue.Wait()
+```
+
+It's important to set up a goroutine to handle responses before sending any notifications, otherwise Push will block waiting for room to return a Response.
+
+You can configure the number of workers used to send notifications concurrently, but be aware that a larger number isn't necessarily better, as Apple limits the number of concurrent streams. From the Apple Push Notification documentation:
+
+> "The APNs server allows multiple concurrent streams for each connection. The exact number of streams is based on server load, so do not assume a specific number of streams."
+
+See `example/concurrent/` for a complete listing.
 
 #### Headers
 
@@ -104,7 +144,7 @@ headers := &push.Headers{
 	LowPriority: true,
 }
 
-id, err := service.Push(deviceToken, headers, p)
+id, err := service.Push(deviceToken, headers, b)
 ```
 
 If no ID is specified APNS will generate and return a unique ID. When an expiration is specified, APNS will store and retry sending the notification until that time, otherwise APNS will not store or retry the notification. LowPriority should always be set when sending a ContentAvailable payload.
@@ -120,29 +160,17 @@ p := payload.APS{
 pm := p.Map()
 pm["acme2"] = []string{"bang", "whiz"}
 
-id, err := service.Push(deviceToken, nil, pm)
-```
-
-The Push method will use json.Marshal to serialize whatever you send it.
-
-#### Resend the same payload
-
-Use json.Marshal to serialize your payload once and then send it to multiple device tokens with PushBytes.
-
-```go
-b, err := json.Marshal(p)
+b, err := json.Marshal(pm)
 if err != nil {
-	log.Fatal(err)
+	log.Fatal(b)
 }
 
-id, err := service.PushBytes(deviceToken, nil, b)
+service.Push(deviceToken, nil, b)
 ```
-
-Whether you use Push or PushBytes, the underlying HTTP/2 connection to APNS will be reused.
 
 #### Error responses
 
-Push and PushBytes may return an `error`. It could be an error the JSON encoding or HTTP request, or it could be a `push.Error` which contains the response from Apple. To access the Reason and HTTP Status code, you must convert the `error` to a `push.Error` as follows:
+If `service.Push` or `queue.Response` returns an error, it could be an HTTP error, or it could be an error response from Apple. To access the Reason and HTTP Status code, you must convert the `error` to a `push.Error` as follows:
 
 ```go
 if e, ok := err.(*push.Error); ok {

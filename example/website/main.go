@@ -55,8 +55,12 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 		// URLArgs must match placeholders in URLFormatString
 		URLArgs: []string{"hello"},
 	}
+	b, err := json.Marshal(p)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	id, err := service.Push(deviceToken, nil, p)
+	id, err := service.Push(deviceToken, nil, b)
 	if err != nil {
 		log.Println(err)
 		return
@@ -140,10 +144,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service, err = push.NewService(push.Production, cert)
+	client, err := push.NewClient(cert)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	service = push.NewService(client, push.Production)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")
