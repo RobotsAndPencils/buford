@@ -2,14 +2,13 @@ package payload
 
 import "encoding/json"
 
-// Browser for Safari Push Notifications
+// Browser for Safari Push Notifications.
 type Browser struct {
-	// Alert dictionary.
 	Alert   BrowserAlert
 	URLArgs []string
 }
 
-// BrowserAlert for Safari Push Notifications
+// BrowserAlert for Safari Push Notifications.
 type BrowserAlert struct {
 	// Title and Body are required
 	Title string `json:"title"`

@@ -1,6 +1,6 @@
 # Buford
 
-Apple Push Notification (APN) Provider for Go 1.6 and HTTP/2.
+Apple Push Notification (APN) Provider library for Go 1.6 and HTTP/2. Send notifications to iOS, macOS, tvOS and watchOS. Buford can also sign push packages for Safari notifications and Wallet passes.
 
 Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
 
@@ -24,11 +24,11 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 **Provider** The Buford library is used to create a _provider_ of push notifications.
 
-**Service** Apple provides the push notification service that Buford communications with.
+**Service** Apple's push notification service that Buford communicates with.
 
-**Client** An `http.Client` provides an HTTP/2 client to communication with the APN Service.
+**Client** An `http.Client` provides an HTTP/2 client to communicate with the APN Service.
 
-**Notification** A payload sent to a device token with some headers.
+**Notification** A payload, device token, and headers.
 
 **Device Token** An identifier for an application on a given device.
 
@@ -165,7 +165,7 @@ if err != nil {
 	log.Fatal(b)
 }
 
-service.Push(deviceToken, nil, b)
+id, err := service.Push(deviceToken, nil, b)
 ```
 
 #### Error responses

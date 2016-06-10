@@ -2,6 +2,8 @@
 // on your App icon.
 package badge
 
+import "fmt"
+
 // Badge number to display on the App icon.
 type Badge struct {
 	number uint
@@ -24,4 +26,12 @@ func New(number uint) Badge {
 // If the badge should not be changed, the number has no effect.
 func (b *Badge) Number() (uint, bool) {
 	return b.number, b.isSet
+}
+
+// String prints out a badge
+func (b Badge) String() string {
+	if b.isSet {
+		return fmt.Sprintf("set %d", b.number)
+	}
+	return "preserve"
 }

@@ -1,11 +1,59 @@
 package payload_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/RobotsAndPencils/buford/payload"
 	"github.com/RobotsAndPencils/buford/payload/badge"
 )
+
+func ExampleAPS() {
+	p := payload.APS{
+		Alert: payload.Alert{Body: "Hello HTTP/2"},
+		Badge: badge.New(42),
+		Sound: "bingbong.aiff",
+	}
+
+	b, err := json.Marshal(p)
+	if err != nil {
+		// handle error
+	}
+	fmt.Printf("%s", b)
+	// Output: {"aps":{"alert":"Hello HTTP/2","badge":42,"sound":"bingbong.aiff"}}
+}
+
+// Use Map to add custom values to the payload.
+func ExampleAPS_Map() {
+	p := payload.APS{
+		Alert: payload.Alert{Body: "Topic secret message"},
+	}
+	pm := p.Map()
+	pm["acme2"] = []string{"bang", "whiz"}
+
+	b, err := json.Marshal(pm)
+	if err != nil {
+		// handle error
+	}
+	fmt.Printf("%s", b)
+	// Output: {"acme2":["bang","whiz"],"aps":{"alert":"Topic secret message"}}
+}
+
+func ExampleAPS_Validate() {
+	p := payload.APS{
+		Badge: badge.Preserve,
+		Sound: "bingbong.aiff",
+	}
+	if err := p.Validate(); err != nil {
+		fmt.Println(err)
+	}
+	// Output: payload does not contain necessary fields
+}
+
+// if err := json.NewEncoder(os.Stdout).Encode(p); err != nil {
+// 	// handle error
+// }
 
 func TestPayload(t *testing.T) {
 	var tests = []struct {

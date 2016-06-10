@@ -1,10 +1,26 @@
 package badge_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RobotsAndPencils/buford/payload/badge"
 )
+
+func Example() {
+	var b badge.Badge
+	fmt.Println(b)
+
+	fmt.Println(badge.Preserve)
+	fmt.Println(badge.Clear)
+	fmt.Println(badge.New(42))
+
+	// Output:
+	// preserve
+	// preserve
+	// set 0
+	// set 42
+}
 
 func TestDefaultBadge(t *testing.T) {
 	b := badge.Badge{}
