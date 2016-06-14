@@ -61,10 +61,9 @@ func BenchmarkPush(b *testing.B) {
 
 	// handle responses
 	go func() {
-		for {
-			_, _, err := queue.Response()
-			if err != nil {
-				b.Fatal(err)
+		for resp := range queue.Responses {
+			if resp.Err != nil {
+				b.Fatal(resp.Err)
 			}
 		}
 	}()

@@ -30,13 +30,12 @@ func TestQueuePush(t *testing.T) {
 	queue := push.NewQueue(service, workers)
 
 	go func() {
-		for i := 0; i < number; i++ {
-			id, deviceToken, err := queue.Response()
-			if err != nil {
-				t.Error(err)
+		for resp := range queue.Responses {
+			if resp.Err != nil {
+				t.Error(resp.Err)
 			}
-			if id != deviceToken {
-				t.Errorf("Expected %q == %q.", id, deviceToken)
+			if resp.ID != resp.DeviceToken {
+				t.Errorf("Expected %q == %q.", resp.ID, resp.DeviceToken)
 			}
 		}
 	}()

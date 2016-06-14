@@ -62,14 +62,14 @@ func main() {
 	queue := push.NewQueue(service, workers)
 
 	// process responses
+	// NOTE: Responses may be received in any order.
 	go func() {
 		count := 1
-		for {
-			id, device, err := queue.Response()
-			if err != nil {
-				log.Printf("(%d) device: %s, error: %v", count, device, err)
+		for resp := range queue.Responses {
+			if resp.Err != nil {
+				log.Printf("(%d) device: %s, error: %v", count, resp.DeviceToken, resp.Err)
 			} else {
-				log.Printf("(%d) device: %s, apns-id: %s", count, device, id)
+				log.Printf("(%d) device: %s, apns-id: %s", count, resp.DeviceToken, resp.ID)
 			}
 			count++
 		}
@@ -87,7 +87,7 @@ func main() {
 	for i := 0; i < number; i++ {
 		queue.Push(deviceToken, nil, b)
 	}
-	// done sending notifications, wait for all responses:
+	// done sending notifications, wait for all responses and shutdown:
 	queue.Wait()
 	elapsed := time.Since(start)
 

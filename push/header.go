@@ -10,7 +10,6 @@ import (
 type Headers struct {
 	// ID for the notification. Apple generates one if omitted.
 	// This should be a UUID with 32 lowercase hexadecimal digits.
-	// TODO: use a UUID type.
 	ID string
 
 	// Apple will retry delivery until this time. The default behavior only tries once.

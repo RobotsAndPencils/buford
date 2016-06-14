@@ -5,3 +5,4 @@ c.out
 *.pass
 *.pkpass
 !testdata/*
+*.sublime-project

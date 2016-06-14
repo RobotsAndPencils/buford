@@ -108,11 +108,10 @@ HTTP/2 can send multiple requests over a single connection, but `service.Push` w
 ```go
 queue := push.NewQueue(service, workers)
 
-// process responses
+// process responses (responses may be received in any order)
 go func() {
-	for {
-		// Response blocks until a response is available
-		log.Println(queue.Response())
+	for resp := range queue.Responses {
+		log.Println(resp)
 	}
 }()
 
@@ -121,7 +120,7 @@ for i := 0; i < number; i++ {
 	queue.Push(deviceToken, nil, b)
 }
 
-// done sending notifications, wait for all responses
+// done sending notifications, wait for all responses and shutdown
 queue.Wait()
 ```
 
@@ -170,7 +169,7 @@ id, err := service.Push(deviceToken, nil, b)
 
 #### Error responses
 
-If `service.Push` or `queue.Response` returns an error, it could be an HTTP error, or it could be an error response from Apple. To access the Reason and HTTP Status code, you must convert the `error` to a `push.Error` as follows:
+Errors from `service.Push` or `queue.Response` could be HTTP errors or an error response from Apple. To access the Reason and HTTP Status code, you must convert the `error` to a `push.Error` as follows:
 
 ```go
 if e, ok := err.(*push.Error); ok {
