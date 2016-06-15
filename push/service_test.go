@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -139,5 +140,26 @@ func TestTimestampError(t *testing.T) {
 	expected := time.Unix(12622780800, 0).UTC()
 	if e.Timestamp != expected {
 		t.Errorf("Expected timestamp %v, got %v.", expected, e.Timestamp)
+	}
+}
+
+func TestPayloadTooLarge(t *testing.T) {
+	payload := []byte(strings.Repeat("0123456789abcdef", 256) + "x")
+
+	service := push.NewService(http.DefaultClient, "host")
+	_, err := service.Push("device-token", nil, payload)
+	if err == nil {
+		t.Fatal("Expected error, got none")
+	}
+	if _, ok := err.(*push.Error); !ok {
+		t.Fatalf("Expected push error, got %v.", err)
+	}
+
+	e := err.(*push.Error)
+	if e.Reason != push.ErrPayloadTooLarge {
+		t.Errorf("Expected PayloadTooLarge, got reason %q.", e.Reason)
+	}
+	if e.Status != http.StatusRequestEntityTooLarge {
+		t.Errorf("Expected status %v, got %v.", http.StatusRequestEntityTooLarge, e.Status)
 	}
 }
