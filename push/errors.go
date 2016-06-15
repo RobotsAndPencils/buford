@@ -30,6 +30,10 @@ var (
 	ErrBadPriority       = errors.New("BadPriority")
 	ErrBadTopic          = errors.New("BadTopic")
 
+	// Token authentication errors.
+	ErrInvalidProviderToken = errors.New("InvalidProviderToken")
+	ErrExpiredProviderToken = errors.New("ExpiredProviderToken")
+
 	// Certificate and topic errors.
 	ErrBadCertificate            = errors.New("BadCertificate")
 	ErrBadCertificateEnvironment = errors.New("BadCertificateEnvironment")
@@ -80,6 +84,10 @@ func mapErrorReason(reason string) error {
 		e = ErrUnregistered
 	case "DuplicateHeaders":
 		e = ErrDuplicateHeaders
+	case "InvalidProviderToken":
+		e = ErrInvalidProviderToken
+	case "ExpiredProviderToken":
+		e = ErrExpiredProviderToken
 	case "BadCertificateEnvironment":
 		e = ErrBadCertificateEnvironment
 	case "BadCertificate":
@@ -128,6 +136,10 @@ func (e *Error) Error() string {
 		return "the apns-priority value is bad"
 	case ErrBadTopic:
 		return "the Topic header was invalid"
+	case ErrInvalidProviderToken:
+		return "JWT authentication token is invalid"
+	case ErrExpiredProviderToken:
+		return "JWT authentication token expired"
 	case ErrBadCertificate:
 		return "the certificate was bad"
 	case ErrBadCertificateEnvironment:
