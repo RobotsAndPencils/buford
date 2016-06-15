@@ -20,12 +20,15 @@ type APS struct {
 	// The name of a sound file to play as an alert.
 	Sound string
 
-	// Content available for silent notifications.
-	// With no alert, sound, or badge.
+	// Content available is for silent notifications
+	// with no alert, sound, or badge.
 	ContentAvailable bool
 
 	// Category identifier for custom actions in iOS 8 or newer.
 	Category string
+
+	// Mutable is used for Service Extensions introduced in iOS 10.
+	MutableContent bool
 }
 
 // Alert dictionary.
@@ -34,6 +37,9 @@ type Alert struct {
 	Title        string   `json:"title,omitempty"`
 	TitleLocKey  string   `json:"title-loc-key,omitempty"`
 	TitleLocArgs []string `json:"title-loc-args,omitempty"`
+
+	// Subtitle added in iOS 10
+	Subtitle string `json:"subtitle,omitempty"`
 
 	// Body text of the alert message.
 	Body    string   `json:"body,omitempty"`
@@ -49,7 +55,8 @@ type Alert struct {
 
 // isSimple alert with only Body set.
 func (a *Alert) isSimple() bool {
-	return len(a.Title) == 0 && len(a.LaunchImage) == 0 &&
+	return len(a.Title) == 0 && len(a.Subtitle) == 0 &&
+		len(a.LaunchImage) == 0 &&
 		len(a.TitleLocKey) == 0 && len(a.TitleLocArgs) == 0 &&
 		len(a.LocKey) == 0 && len(a.LocArgs) == 0 && len(a.ActionLocKey) == 0
 }
@@ -82,6 +89,9 @@ func (a *APS) Map() map[string]interface{} {
 	}
 	if a.Category != "" {
 		aps["category"] = a.Category
+	}
+	if a.MutableContent {
+		aps["mutable-content"] = 1
 	}
 
 	// wrap in "aps" to form the final payload

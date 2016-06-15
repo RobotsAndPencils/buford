@@ -51,10 +51,6 @@ func ExampleAPS_Validate() {
 	// Output: payload does not contain necessary fields
 }
 
-// if err := json.NewEncoder(os.Stdout).Encode(p); err != nil {
-// 	// handle error
-// }
-
 func TestPayload(t *testing.T) {
 	var tests = []struct {
 		input    payload.APS
@@ -81,11 +77,19 @@ func TestPayload(t *testing.T) {
 		{
 			payload.APS{
 				Alert: payload.Alert{
-					Title: "Message",
-					Body:  "Message received from Bob",
+					Title:    "Message",
+					Subtitle: "This is important",
+					Body:     "Message received from Bob",
 				},
 			},
-			[]byte(`{"aps":{"alert":{"title":"Message","body":"Message received from Bob"}}}`),
+			[]byte(`{"aps":{"alert":{"title":"Message","subtitle":"This is important","body":"Message received from Bob"}}}`),
+		},
+		{
+			payload.APS{
+				Alert:          payload.Alert{Body: "Change is coming"},
+				MutableContent: true,
+			},
+			[]byte(`{"aps":{"alert":"Change is coming","mutable-content":1}}`),
 		},
 	}
 
