@@ -1,6 +1,6 @@
 # Buford
 
-Apple Push Notification (APN) Provider library for Go 1.6 and HTTP/2. Send notifications to iOS, macOS, tvOS and watchOS. Buford can also sign push packages for Safari notifications and Wallet passes.
+Apple Push Notification (APN) Provider library for Go 1.6 and HTTP/2. Send remote notifications to iOS, macOS, tvOS and watchOS. Buford can also sign push packages for Safari notifications and Wallet passes.
 
 Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
 
@@ -39,6 +39,10 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 ### Installation
 
 This library requires [Go 1.6.2](https://golang.org/dl/) or better.
+
+```
+go get -u -d github.com/RobotsAndPencils/buford
+```
 
 Buford depends on several packages outside of the standard library, including the http2 package. Its certificate package depends on the pkcs12 and pushpackage depends on pkcs7. They can be retrieved or updated with:
 
@@ -212,11 +216,11 @@ See `example/wallet/` and the [Wallet Developer Guide][wallet].
 
 ### Related Projects
 
-* [apns2](https://github.com/sideshow/apns2) (Go)
-* [go-apns-server](https://github.com/CleverTap/go-apns-server) (Go mock server)
-* [gorush](https://github.com/appleboy/gorush) (A push notification server written in Go)
-* [Push Encryption](https://github.com/GoogleChrome/push-encryption-go) (Go Web Push for Chrome and Firefox)
+* [apns2](https://github.com/sideshow/apns2) Alternative HTTP/2 APN provider library (Go)
+* [go-apns-server](https://github.com/CleverTap/go-apns-server) Mock APN server (Go)
+* [gorush](https://github.com/appleboy/gorush) A push notification server (Go)
+* [Push Encryption](https://github.com/GoogleChrome/push-encryption-go) Web Push for Chrome and Firefox (Go)
+* [micromdm](https://micromdm.io/) Mobile Device Management server (Go)
 * [Lowdown](https://github.com/alloy/lowdown) (Ruby)
 * [Apnotic](https://github.com/ostinelli/apnotic) (Ruby)
 * [Pigeon](https://github.com/codedge-llc/pigeon) (Elixir, iOS and Android)
-
