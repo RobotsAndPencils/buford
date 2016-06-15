@@ -21,6 +21,8 @@ const (
 	Production2197  = "https://api.push.apple.com:2197"
 )
 
+const maxPayload = 4096 // 4KB at most
+
 // Service is the Apple Push Notification Service that you send notifications to.
 type Service struct {
 	Host   string
@@ -52,6 +54,14 @@ func NewClient(cert tls.Certificate) (*http.Client, error) {
 
 // Push sends a notification and waits for a response.
 func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (string, error) {
+	// check payload length before even hitting Apple.
+	if len(payload) > maxPayload {
+		return "", &Error{
+			Reason: ErrPayloadTooLarge,
+			Status: http.StatusRequestEntityTooLarge,
+		}
+	}
+
 	urlStr := fmt.Sprintf("%v/3/device/%v", s.Host, deviceToken)
 
 	req, err := http.NewRequest("POST", urlStr, bytes.NewReader(payload))
