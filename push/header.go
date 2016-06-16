@@ -12,6 +12,10 @@ type Headers struct {
 	// This should be a UUID with 32 lowercase hexadecimal digits.
 	ID string
 
+	// CollapseID is used to update an existing notification that has the same
+	// identifier (Notification Management in iOS 10).
+	CollapseID string
+
 	// Apple will retry delivery until this time. The default behavior only tries once.
 	Expiration time.Time
 
@@ -33,6 +37,10 @@ func (h *Headers) set(reqHeader http.Header) {
 	if h.ID != "" {
 		reqHeader.Set("apns-id", h.ID)
 	} // when omitted, Apple will generate a UUID for you
+
+	if h.CollapseID != "" {
+		reqHeader.Set("apns-collapse-id", h.CollapseID)
+	}
 
 	if !h.Expiration.IsZero() {
 		reqHeader.Set("apns-expiration", strconv.FormatInt(h.Expiration.Unix(), 10))
