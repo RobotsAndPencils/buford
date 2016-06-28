@@ -110,7 +110,7 @@ See `example/push` for the complete listing.
 HTTP/2 can send multiple requests over a single connection, but `service.Push` waits for a response before returning. Instead, you can wrap a `Service` in a queue to handle responses independently, allowing you to send multiple notifications at once.
 
 ```go
-queue := push.NewQueue(service, workers)
+queue := push.NewQueue(service, numWorkers)
 
 // process responses (responses may be received in any order)
 go func() {
@@ -120,7 +120,7 @@ go func() {
 }()
 
 // send the notifications
-for i := 0; i < number; i++ {
+for i := 0; i < 100; i++ {
 	queue.Push(deviceToken, nil, b)
 }
 
