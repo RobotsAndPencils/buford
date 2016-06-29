@@ -7,7 +7,9 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/net/http2"
@@ -71,8 +73,16 @@ func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (st
 	req.Header.Set("Content-Type", "application/json")
 	headers.set(req.Header)
 
-	resp, err := s.Client.Do(req)
+	tr := s.Client.Transport
+	if tr == nil {
+		tr = http.DefaultTransport
+	}
+	resp, err := tr.RoundTrip(req)
 	if err != nil {
+		if e, ok := err.(http2.GoAwayError); ok {
+			// parse DebugData as JSON. no status code known (0)
+			return "", parseErrorResponse(strings.NewReader(e.DebugData), 0)
+		}
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -81,26 +91,29 @@ func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (st
 		return resp.Header.Get("apns-id"), nil
 	}
 
+	return "", parseErrorResponse(resp.Body, resp.StatusCode)
+}
+
+func parseErrorResponse(body io.Reader, statusCode int) error {
 	var response struct {
 		// Reason for failure
 		Reason string `json:"reason"`
 		// Timestamp for 410 StatusGone (ErrUnregistered)
 		Timestamp int64 `json:"timestamp"`
 	}
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	err := json.NewDecoder(body).Decode(&response)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	es := &Error{
 		Reason: mapErrorReason(response.Reason),
-		Status: resp.StatusCode,
+		Status: statusCode,
 	}
 
 	if response.Timestamp != 0 {
 		// the response.Timestamp is Milliseconds, but time.Unix() requires seconds
 		es.Timestamp = time.Unix(response.Timestamp/1000, 0).UTC()
 	}
-
-	return "", es
+	return es
 }
