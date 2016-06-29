@@ -184,19 +184,6 @@ if e, ok := err.(*push.Error); ok {
 }
 ```
 
-##### GOAWAY errors
-
-You will never receive some of Apple's documented error responses, such as `BadCertificateEnvironment`. This is because Apple sometimes returns error messages in a GOAWAY frame while disconnecting rather than in the usual DATA frame. Go [doesn't currently](https://github.com/golang/go/issues/14627) extract these GOAWAY errors. Instead you may see an error like this: 
-
-> http2: server sent GOAWAY and closed the connection
-
-You can run your application with HTTP/2 logging enabled to see the GOAWAY frames that were sent, including the reason.
-
-```console
-$ GODEBUG=http2debug=1 ./myapp
-http2: Transport received GOAWAY len=46 LastStreamID=0 ErrCode=NO_ERROR Debug="{\"reason\":\"BadCertificateEnvironment\"}"
-```
-
 ### Website Push
 
 Before you can send push notifications through Safari and the Notification Center, you must provide a push package, which is a signed zip file containing some JSON and icons.
