@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -73,15 +74,14 @@ func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (st
 	req.Header.Set("Content-Type", "application/json")
 	headers.set(req.Header)
 
-	tr := s.Client.Transport
-	if tr == nil {
-		tr = http.DefaultTransport
-	}
-	resp, err := tr.RoundTrip(req)
+	resp, err := s.Client.Do(req)
+
 	if err != nil {
-		if e, ok := err.(http2.GoAwayError); ok {
-			// parse DebugData as JSON. no status code known (0)
-			return "", parseErrorResponse(strings.NewReader(e.DebugData), 0)
+		if e, ok := err.(*url.Error); ok {
+			if e, ok := e.Err.(http2.GoAwayError); ok {
+				// parse DebugData as JSON. no status code known (0)
+				return "", parseErrorResponse(strings.NewReader(e.DebugData), 0)
+			}
 		}
 		return "", err
 	}
