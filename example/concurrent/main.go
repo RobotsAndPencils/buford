@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/RobotsAndPencils/buford/certificate"
@@ -61,8 +60,7 @@ func main() {
 	exitOnError(err)
 	service := push.NewService(client, host)
 	queue := push.NewQueue(service, workers)
-	var wg sync.WaitGroup
-	wg.Add(1)
+	done := make(chan bool)
 
 	// process responses
 	// NOTE: Responses may be received in any order.
@@ -76,7 +74,7 @@ func main() {
 			}
 			count++
 		}
-		wg.Done()
+		done <- true
 	}()
 
 	// prepare notification(s) to send
@@ -93,7 +91,7 @@ func main() {
 	}
 	// done sending notifications, wait for all responses and shutdown:
 	queue.Wait()
-	wg.Wait()
+	<-done
 	elapsed := time.Since(start)
 
 	log.Printf("Time for %d responses: %s (%s ea.)", number, elapsed, elapsed/time.Duration(number))

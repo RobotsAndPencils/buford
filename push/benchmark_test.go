@@ -58,6 +58,7 @@ func BenchmarkPush(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
+	done := make(chan bool)
 
 	// handle responses
 	go func() {
@@ -66,6 +67,7 @@ func BenchmarkPush(b *testing.B) {
 				b.Fatal(resp.Err)
 			}
 		}
+		done <- true
 	}()
 
 	b.ResetTimer()
@@ -75,4 +77,5 @@ func BenchmarkPush(b *testing.B) {
 		queue.Push(deviceToken, nil, bytes)
 	}
 	queue.Wait()
+	<-done
 }

@@ -111,15 +111,14 @@ HTTP/2 can send multiple requests over a single connection, but `service.Push` w
 
 ```go
 queue := push.NewQueue(service, numWorkers)
-var wg sync.WaitGroup
-wg.Add(1)
+done := make(chan bool)
 
 // process responses (responses may be received in any order)
 go func() {
 	for resp := range queue.Responses {
 		log.Println(resp)
 	}
-	wg.Done()
+	done <- true
 }()
 
 // send the notifications
@@ -129,7 +128,8 @@ for i := 0; i < 100; i++ {
 
 // done sending notifications, wait for all responses and shutdown
 queue.Wait()
-wg.Wait()
+// all responses received, wait for all responses to be processed
+<-done
 ```
 
 It's important to set up a goroutine to handle responses before sending any notifications, otherwise Push will block waiting for room to return a Response.
