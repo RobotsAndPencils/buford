@@ -1,13 +1,10 @@
 package push
 
-import "sync"
-
 // Queue up notifications without waiting for the response.
 type Queue struct {
 	service       *Service
 	notifications chan notification
 	Responses     chan Response
-	wg            sync.WaitGroup
 }
 
 // notification to send.
@@ -46,17 +43,15 @@ func (q *Queue) Push(deviceToken string, headers *Headers, payload []byte) {
 		Headers:     headers,
 		Payload:     payload,
 	}
-	q.wg.Add(1)
 	q.notifications <- n
 }
 
-// Wait for all responses to be handled and then close channels.
-func (q *Queue) Wait() {
+// Close the channels for notifications and Responses and shutdown workers.
+// You should only call this after all responses have been received.
+func (q *Queue) Close() {
 	// Stop accepting new notifications and shutdown workers after existing notifications
 	// are processed:
 	close(q.notifications)
-	// Wait for all responses to be handled:
-	q.wg.Wait()
 	// Close responses channel to clean up:
 	close(q.Responses)
 }
@@ -65,6 +60,5 @@ func worker(q *Queue) {
 	for n := range q.notifications {
 		id, err := q.service.Push(n.DeviceToken, n.Headers, n.Payload)
 		q.Responses <- Response{DeviceToken: n.DeviceToken, ID: id, Err: err}
-		q.wg.Done()
 	}
 }

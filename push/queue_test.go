@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/RobotsAndPencils/buford/push"
@@ -28,6 +29,7 @@ func TestQueuePush(t *testing.T) {
 
 	service := push.NewService(http.DefaultClient, server.URL)
 	queue := push.NewQueue(service, workers)
+	var wg sync.WaitGroup
 
 	go func() {
 		for resp := range queue.Responses {
@@ -37,11 +39,14 @@ func TestQueuePush(t *testing.T) {
 			if resp.ID != resp.DeviceToken {
 				t.Errorf("Expected %q == %q.", resp.ID, resp.DeviceToken)
 			}
+			wg.Done()
 		}
 	}()
 
 	for i := 0; i < number; i++ {
+		wg.Add(1)
 		queue.Push(fmt.Sprintf("%04d", i), nil, payload)
 	}
-	queue.Wait()
+	wg.Wait()
+	queue.Close()
 }
