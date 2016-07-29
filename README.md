@@ -38,7 +38,7 @@ Also see Apple's [Local and Remote Notification Programming Guide][notification]
 
 ### Installation
 
-This library requires [Go 1.6.2](https://golang.org/dl/) or better.
+This library requires [Go 1.6.3](https://golang.org/dl/) or better.
 
 ```
 go get -u -d github.com/RobotsAndPencils/buford
