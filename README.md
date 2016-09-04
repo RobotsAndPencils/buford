@@ -231,3 +231,4 @@ See `example/wallet/` and the [Wallet Developer Guide][wallet].
 * [Lowdown](https://github.com/alloy/lowdown) (Ruby)
 * [Apnotic](https://github.com/ostinelli/apnotic) (Ruby)
 * [Pigeon](https://github.com/codedge-llc/pigeon) (Elixir, iOS and Android)
+* [APNSwift](https://github.com/kaunteya/APNSwift) (Swift)
