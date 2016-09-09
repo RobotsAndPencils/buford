@@ -4,7 +4,7 @@ Apple Push Notification (APN) Provider library for Go 1.6 and HTTP/2. Send remot
 
 Please see [releases](https://github.com/RobotsAndPencils/buford/releases) for updates.
 
-[![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford) [![Build Status](https://travis-ci.org/RobotsAndPencils/buford.svg?branch=ci)](https://travis-ci.org/RobotsAndPencils/buford) ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+[![GoDoc](https://godoc.org/github.com/RobotsAndPencils/buford?status.svg)](https://godoc.org/github.com/RobotsAndPencils/buford) [![Build Status](https://travis-ci.org/RobotsAndPencils/buford.svg?branch=ci)](https://travis-ci.org/RobotsAndPencils/buford) ![MIT](https://img.shields.io/badge/license-MIT-blue.svg) [![codecov](https://codecov.io/gh/RobotsAndPencils/buford/branch/master/graph/badge.svg)](https://codecov.io/gh/RobotsAndPencils/buford)
 
 ### Documentation
 

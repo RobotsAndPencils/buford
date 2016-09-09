@@ -2,7 +2,7 @@ sudo: false
 language: go
 
 go:
-  - 1.7
+  - 1.7.1
   - 1.6.3
   - tip
 
@@ -15,12 +15,15 @@ before_script:
   - go get -u github.com/golang/lint/golint
 
 script:
-  - go test -v --race $(go list ./... | grep -v '/certificate')
+  - ./test.sh
 
 after_script:
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
   - test -z "$(golint ./...     | tee /dev/stderr)"
   - go vet ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 os:
   - linux
