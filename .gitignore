@@ -6,3 +6,4 @@ c.out
 *.pkpass
 !testdata/*
 *.sublime-project
+coverage.txt
