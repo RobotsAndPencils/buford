@@ -25,6 +25,9 @@ type Headers struct {
 
 	// Topic for certificates with multiple topics.
 	Topic string
+
+	// Authorization for Token Authentication (JWT)
+	Authorization string
 }
 
 // set headers for an HTTP request
@@ -52,6 +55,10 @@ func (h *Headers) set(reqHeader http.Header) {
 
 	if h.Topic != "" {
 		reqHeader.Set("apns-topic", h.Topic)
+	}
+
+	if h.Authorization != "" {
+		reqHeader.Set("authorization", "bearer "+h.Authorization)
 	}
 
 }
