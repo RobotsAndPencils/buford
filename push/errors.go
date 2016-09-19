@@ -31,8 +31,10 @@ var (
 	ErrBadTopic          = errors.New("BadTopic")
 
 	// Token authentication errors.
-	ErrInvalidProviderToken = errors.New("InvalidProviderToken")
-	ErrExpiredProviderToken = errors.New("ExpiredProviderToken")
+	ErrMissingProviderToken        = errors.New("MissingProviderToken")
+	ErrInvalidProviderToken        = errors.New("InvalidProviderToken")
+	ErrExpiredProviderToken        = errors.New("ExpiredProviderToken")
+	ErrTooManyProviderTokenUpdates = errors.New("TooManyProviderTokenUpdates")
 
 	// Certificate and topic errors.
 	ErrBadCertificate            = errors.New("BadCertificate")
@@ -84,10 +86,14 @@ func mapErrorReason(reason string) error {
 		e = ErrUnregistered
 	case "DuplicateHeaders":
 		e = ErrDuplicateHeaders
+	case "MissingProviderToken":
+		e = ErrMissingProviderToken
 	case "InvalidProviderToken":
 		e = ErrInvalidProviderToken
 	case "ExpiredProviderToken":
 		e = ErrExpiredProviderToken
+	case "TooManyProviderTokenUpdates":
+		e = ErrTooManyProviderTokenUpdates
 	case "BadCertificateEnvironment":
 		e = ErrBadCertificateEnvironment
 	case "BadCertificate":
@@ -136,10 +142,14 @@ func (e *Error) Error() string {
 		return "the apns-priority value is bad"
 	case ErrBadTopic:
 		return "the Topic header was invalid"
+	case ErrMissingProviderToken:
+		return "the Authorization header was missing"
 	case ErrInvalidProviderToken:
-		return "JWT authentication token is invalid"
+		return "the JWT authentication token is invalid"
 	case ErrExpiredProviderToken:
-		return "JWT authentication token expired"
+		return "the JWT authentication token expired"
+	case ErrTooManyProviderTokenUpdates:
+		return "the JWT authentication token is being updated too often"
 	case ErrBadCertificate:
 		return "the certificate was bad"
 	case ErrBadCertificateEnvironment:
