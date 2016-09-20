@@ -36,20 +36,12 @@ func main() {
 	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	exitOnError(err)
 
-	// if pkey, ok := privateKey.(*ecdsa.PrivateKey); ok {
-	// 	log.Printf("%#v", pkey)
-	// }
-
-	// privateKey, err := jwt.ParseECPrivateKeyFromPEM(privateBytes)
-	// exitOnError(err)
-
 	service := push.NewService(http.DefaultClient, push.Development)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
 		"iss": teamID,
 		"iat": time.Now().Unix(),
 	})
-	// delete(token.Header, "typ")
 	token.Header["kid"] = keyID
 	log.Printf("%#v\n", token)
 
@@ -57,12 +49,6 @@ func main() {
 	tokenString, err := token.SignedString(privateKey)
 	exitOnError(err)
 	log.Println(tokenString)
-
-	// _, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-	// 	log.Printf("%#v\n", token)
-	// 	return publicKey, nil
-	// })
-	// exitOnError(err)
 
 	h := &push.Headers{Authorization: tokenString, Topic: bundleID}
 
