@@ -4,10 +4,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/RobotsAndPencils/buford/push"
@@ -17,12 +17,14 @@ import (
 
 func main() {
 	var deviceToken, filename, keyID, teamID, bundleID string
+	var number int
 
 	flag.StringVar(&deviceToken, "d", "", "Device token")
 	flag.StringVar(&filename, "k", "", "Path to private signing key")
 	flag.StringVar(&keyID, "kid", "", "Key ID")
 	flag.StringVar(&teamID, "t", "", "TeamID")
 	flag.StringVar(&bundleID, "b", "", "Bundle ID for app")
+	flag.IntVar(&number, "n", 100, "Number of notifications to send")
 	flag.Parse()
 
 	privateBytes, err := ioutil.ReadFile(filename)
@@ -50,12 +52,34 @@ func main() {
 	exitOnError(err)
 	log.Println(tokenString)
 
+	queue := push.NewQueue(service, 20)
+	var wg sync.WaitGroup
+
+	// process responses
+	// NOTE: Responses may be received in any order.
+	go func() {
+		count := 1
+		for resp := range queue.Responses {
+			if resp.Err != nil {
+				log.Printf("(%d) device: %s, error: %v", count, resp.DeviceToken, resp.Err)
+			} else {
+				log.Printf("(%d) device: %s, apns-id: %s", count, resp.DeviceToken, resp.ID)
+			}
+			count++
+			wg.Done()
+		}
+	}()
+
 	h := &push.Headers{Authorization: tokenString, Topic: bundleID}
+	b := []byte(`{"aps":{"alert":"Hello HTTP/2"}}`)
 
-	id, err := service.Push(deviceToken, h, []byte(`{"aps":{"alert":"Hello HTTP/2"}}`))
-	exitOnError(err)
-
-	fmt.Println("apns-id:", id)
+	for i := 0; i < number; i++ {
+		wg.Add(1)
+		queue.Push(deviceToken, h, b)
+	}
+	// done sending notifications, wait for all responses and shutdown:
+	wg.Wait()
+	queue.Close()
 }
 
 func exitOnError(err error) {
