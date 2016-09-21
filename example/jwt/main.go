@@ -73,6 +73,12 @@ func main() {
 	h := &push.Headers{Authorization: tokenString, Topic: bundleID}
 	b := []byte(`{"aps":{"alert":"Hello HTTP/2"}}`)
 
+	// synchronous send to prime stream
+	id, err := service.Push(deviceToken, h, []byte(`{"aps":{"alert":"Hello HTTP/2"}}`))
+	exitOnError(err)
+	log.Println("apns-id:", id)
+
+	// concurrent send
 	for i := 0; i < number; i++ {
 		wg.Add(1)
 		queue.Push(deviceToken, h, b)
