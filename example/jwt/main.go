@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
@@ -10,10 +11,23 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/http2"
+
 	"github.com/RobotsAndPencils/buford/push"
 
 	"github.com/dgrijalva/jwt-go"
 )
+
+func NewClient() (*http.Client, error) {
+	config := &tls.Config{}
+	transport := &http.Transport{TLSClientConfig: config}
+
+	if err := http2.ConfigureTransport(transport); err != nil {
+		return nil, err
+	}
+
+	return &http.Client{Transport: transport}, nil
+}
 
 func main() {
 	var deviceToken, filename, keyID, teamID, bundleID string
@@ -38,7 +52,10 @@ func main() {
 	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	exitOnError(err)
 
-	service := push.NewService(http.DefaultClient, push.Development)
+	client, err := NewClient()
+	exitOnError(err)
+
+	service := push.NewService(client, push.Development)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
 		"iss": teamID,
