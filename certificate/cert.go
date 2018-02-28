@@ -75,6 +75,9 @@ func verify(cert *x509.Certificate) error {
 		switch e.Reason {
 		case x509.Expired:
 			return ErrExpired
+		case x509.IncompatibleUsage:
+			// Apple cert fail on go 1.10
+			return nil
 		default:
 			return err
 		}
