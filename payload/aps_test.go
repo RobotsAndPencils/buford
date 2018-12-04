@@ -91,6 +91,13 @@ func TestPayload(t *testing.T) {
 			},
 			[]byte(`{"aps":{"alert":"Change is coming","mutable-content":1}}`),
 		},
+		{
+			payload.APS{
+					Alert:          payload.Alert{Body: "Grouped notification"},
+					ThreadID: "thread-id-1",
+			},
+			[]byte(`{"aps":{"alert":"Grouped notification","thread-id":"thread-id-1"}}`),
+		},
 	}
 
 	for _, tt := range tests {
