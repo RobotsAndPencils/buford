@@ -93,8 +93,8 @@ func TestPayload(t *testing.T) {
 		},
 		{
 			payload.APS{
-					Alert:          payload.Alert{Body: "Grouped notification"},
-					ThreadID: "thread-id-1",
+				Alert:    payload.Alert{Body: "Grouped notification"},
+				ThreadID: "thread-id-1",
 			},
 			[]byte(`{"aps":{"alert":"Grouped notification","thread-id":"thread-id-1"}}`),
 		},
