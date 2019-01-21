@@ -78,7 +78,9 @@ func (s *Service) Push(deviceToken string, headers *Headers, payload []byte) (st
 
 	if err != nil {
 		if e, ok := err.(*url.Error); ok {
+			// log.Printf("%#v", e)
 			if e, ok := e.Err.(http2.GoAwayError); ok {
+				// ErrCode:0x7, DebugData:"Maximum active streams violated for this endpoint."
 				// parse DebugData as JSON. no status code known (0)
 				return "", parseErrorResponse(strings.NewReader(e.DebugData), 0)
 			}

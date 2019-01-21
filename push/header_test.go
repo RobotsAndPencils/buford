@@ -8,11 +8,12 @@ import (
 
 func TestHeaders(t *testing.T) {
 	headers := Headers{
-		ID:          "uuid",
-		CollapseID:  "game1.score.identifier",
-		Expiration:  time.Unix(12622780800, 0),
-		LowPriority: true,
-		Topic:       "bundle-id",
+		ID:            "uuid",
+		CollapseID:    "game1.score.identifier",
+		Expiration:    time.Unix(12622780800, 0),
+		LowPriority:   true,
+		Topic:         "bundle-id",
+		Authorization: "eyJhbGciOiJFUzI1N",
 	}
 
 	reqHeader := http.Header{}
@@ -23,6 +24,7 @@ func TestHeaders(t *testing.T) {
 	testHeader(t, reqHeader, "apns-expiration", "12622780800")
 	testHeader(t, reqHeader, "apns-priority", "5")
 	testHeader(t, reqHeader, "apns-topic", "bundle-id")
+	testHeader(t, reqHeader, "authorization", "bearer eyJhbGciOiJFUzI1N")
 }
 
 func TestNilHeader(t *testing.T) {
@@ -35,6 +37,7 @@ func TestNilHeader(t *testing.T) {
 	testHeader(t, reqHeader, "apns-expiration", "")
 	testHeader(t, reqHeader, "apns-priority", "")
 	testHeader(t, reqHeader, "apns-topic", "")
+	testHeader(t, reqHeader, "authorization", "")
 }
 
 func TestEmptyHeaders(t *testing.T) {
@@ -47,6 +50,7 @@ func TestEmptyHeaders(t *testing.T) {
 	testHeader(t, reqHeader, "apns-expiration", "")
 	testHeader(t, reqHeader, "apns-priority", "")
 	testHeader(t, reqHeader, "apns-topic", "")
+	testHeader(t, reqHeader, "authorization", "")
 }
 
 func testHeader(t *testing.T, reqHeader http.Header, key, expected string) {
