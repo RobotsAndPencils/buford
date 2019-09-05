@@ -25,7 +25,16 @@ type Headers struct {
 
 	// Topic for certificates with multiple topics.
 	Topic string
+
+	PushType PushType
 }
+
+type PushType string
+
+const (
+	PushTypeAlert      PushType = "alert"
+	PushTypeBackground PushType = "background"
+)
 
 // set headers for an HTTP request
 func (h *Headers) set(reqHeader http.Header) {
@@ -54,4 +63,7 @@ func (h *Headers) set(reqHeader http.Header) {
 		reqHeader.Set("apns-topic", h.Topic)
 	}
 
+	if h.PushType != "" {
+		reqHeader.Set("apns-push-type", string(h.PushType))
+	}
 }
