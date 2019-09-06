@@ -29,6 +29,7 @@ var (
 	ErrBadExpirationDate = errors.New("BadExpirationDate")
 	ErrBadPriority       = errors.New("BadPriority")
 	ErrBadTopic          = errors.New("BadTopic")
+	ErrInvalidPushType   = errors.New("InvalidPushType")
 
 	// Certificate and topic errors.
 	ErrBadCertificate            = errors.New("BadCertificate")
@@ -102,6 +103,8 @@ func mapErrorReason(reason string) error {
 		e = ErrServiceUnavailable
 	case "MissingTopic":
 		e = ErrMissingTopic
+	case "InvalidPushType":
+		e = ErrInvalidPushType
 	default:
 		e = errors.New(reason)
 	}
@@ -136,6 +139,8 @@ func (e *Error) Error() string {
 		return "there was an error with the certificate"
 	case ErrMissingTopic:
 		return "the Topic header of the request was not specified and was required"
+	case ErrInvalidPushType:
+		return "the apns-push-type value is invalid"
 	case ErrTopicDisallowed:
 		return "pushing to this topic is not allowed"
 	case ErrUnregistered:
