@@ -26,14 +26,21 @@ type Headers struct {
 	// Topic for certificates with multiple topics.
 	Topic string
 
-	PushType PushType
+	// Type of push
+	Type Type
 }
 
-type PushType string
+// Type of push
+type Type string
 
+// Available push types
 const (
-	PushTypeAlert      PushType = "alert"
-	PushTypeBackground PushType = "background"
+	Alert        Type = "alert"
+	Background   Type = "background"
+	VoIP         Type = "voip"
+	Complication Type = "complication"
+	FileProvider Type = "fileprovider"
+	MDM          Type = "mdm"
 )
 
 // set headers for an HTTP request
@@ -63,7 +70,7 @@ func (h *Headers) set(reqHeader http.Header) {
 		reqHeader.Set("apns-topic", h.Topic)
 	}
 
-	if h.PushType != "" {
-		reqHeader.Set("apns-push-type", string(h.PushType))
+	if h.Type != "" {
+		reqHeader.Set("apns-push-type", string(h.Type))
 	}
 }

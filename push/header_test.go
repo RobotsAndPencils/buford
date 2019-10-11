@@ -13,7 +13,7 @@ func TestHeaders(t *testing.T) {
 		Expiration:  time.Unix(12622780800, 0),
 		LowPriority: true,
 		Topic:       "bundle-id",
-		PushType:    PushTypeAlert,
+		Type:        Alert,
 	}
 
 	reqHeader := http.Header{}
