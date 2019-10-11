@@ -228,6 +228,8 @@ See `example/wallet/` and the [Wallet Developer Guide][wallet].
 * [go-apns-server](https://github.com/CleverTap/go-apns-server) Mock APN server (Go)
 * [gorush](https://github.com/appleboy/gorush) A push notification server (Go)
 * [Push Encryption](https://github.com/GoogleChrome/push-encryption-go) Web Push for Chrome and Firefox (Go)
+* [apns](https://github.com/timehop/apns) A Go package to interface with the Apple Push Notification Service (Timehop)
+* [apns](https://github.com/Coccodrillo/apns) Utilities for Apple Push Notification and Feedback Services
 * [micromdm](https://micromdm.io/) Mobile Device Management server (Go)
 * [Lowdown](https://github.com/alloy/lowdown) (Ruby)
 * [Apnotic](https://github.com/ostinelli/apnotic) (Ruby)
