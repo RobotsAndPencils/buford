@@ -152,6 +152,7 @@ headers := &push.Headers{
 	ID:          "922D9F1F-B82E-B337-EDC9-DB4FC8527676",
 	Expiration:  time.Now().Add(time.Hour),
 	LowPriority: true,
+	PushType:    push.PushTypeAlert,
 }
 
 id, err := service.Push(deviceToken, headers, b)
